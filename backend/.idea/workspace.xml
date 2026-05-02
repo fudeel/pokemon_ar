@@ -2,99 +2,20 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/WorldOfHumans.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/modules.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/characters/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/characters/character.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/characters/living_entity.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/class_definition.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/currency.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/experience_config.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/experience_tracker.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/inventory.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/item.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/loot_drop.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/mob_brain.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/quest_definition.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/quest_log.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/resource_pool.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/stat_block.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/vector2.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/components/vendor_stock.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/core/event.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/core/event_bus.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/core/game_loop.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/db/database.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/db/repositories/item_repo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/db/repositories/loot_table_repo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/db/repositories/map_object_repo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/db/repositories/mob_template_repo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/db/repositories/player_repo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/db/repositories/quest_repo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/db/repositories/vendor_repo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/db/repositories/zone_repo.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/db/schema.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/definitions/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/definitions/druid.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/definitions/hunter.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/definitions/mage.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/definitions/paladin.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/definitions/priest.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/definitions/rogue.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/definitions/shaman.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/definitions/warlock.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/definitions/warrior.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/aggression_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/armor_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/character_class_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/faction.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/interaction_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/item_slot.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/item_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/map_object_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/mob_state.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/quest_status.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/race.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/resource_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/role.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/stat_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/enums/weapon_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/main.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/network/connection.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/network/connection_manager.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/network/message.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/network/message_type.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/network/ws_bridge.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/network/ws_protocol.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/network/ws_server.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/systems/combat_system.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/systems/experience_system.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/systems/interaction_system.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/systems/loot_system.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/systems/movement_system.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/systems/quest_system.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/systems/spawn_system.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/systems/sync_system.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/systems/vendor_system.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/world/__init__.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/world/chunk.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/world/map_object.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/world/map_object_factory.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/world/map_object_registry.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/world/mob_instance.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/world/spatial_grid.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/world/world.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/world/zone.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/world/zone_controller.py" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/game/ws_main.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/../admin-frontend/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../admin-frontend/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../admin-frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../admin-frontend/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/app_factory.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/app_factory.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/presenters.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/presenters.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/routers/admin_router.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/routers/admin_router.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/schemas/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/schemas/admin.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/schemas/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/schemas/auth.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/schemas/world.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/schemas/world.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/db/schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/app/db/schema.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/domain/world/spawn_area.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/domain/world/spawn_area.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/repositories/spawn_area_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/spawn_area_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/services/admin_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/admin_service.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -102,7 +23,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$/.." />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
   &quot;lastFilter&quot;: {
@@ -110,12 +31,12 @@
     &quot;assignee&quot;: &quot;fudeel&quot;
   }
 }</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/fudeel/pokemon_backend.git&quot;,
-    &quot;accountId&quot;: &quot;06c1cf51-3ae3-4eac-b1ec-000b07252643&quot;
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/fudeel/pokemon_ar.git",
+    "accountId": "d4df7260-0896-4dc3-abb4-369291125f40"
   }
-}</component>
+}]]></component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 0
@@ -135,6 +56,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "ai.playground.ignore.import.keys.banner.in.settings": "true",
     "git-widget-placeholder": "main",
+    "nodejs_package_manager_path": "npm",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -163,20 +85,15 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
-    <recent_temporary>
-      <list>
-        <item itemvalue="Python.main" />
-      </list>
-    </recent_temporary>
   </component>
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.30387.173" />
-        <option value="bundled-python-sdk-4762d8aabb82-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.30387.173" />
+        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-WS-242.22855.79" />
       </set>
     </attachedChunks>
   </component>
+  <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
       <changelist id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="" />
@@ -186,6 +103,9 @@
       <updated>1777204073047</updated>
       <workItem from="1777204074372" duration="1977000" />
       <workItem from="1777550028682" duration="1022000" />
+      <workItem from="1777553371522" duration="1822000" />
+      <workItem from="1777715416855" duration="713000" />
+      <workItem from="1777716210128" duration="18000" />
     </task>
     <servers />
   </component>

@@ -1,0 +1,37 @@
+/* admin-frontend/app/globals.css */
+@import "tailwindcss";
+
+@theme {
+  --color-pokered: #cc0000;
+  --color-pokered-dark: #990000;
+  --color-pokered-light: #ff3333;
+  --color-surface: #111827;
+  --color-surface-2: #1f2937;
+  --color-surface-3: #374151;
+  --color-border: #374151;
+}
+
+html,
+body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  background-color: #111827;
+  color: #f9fafb;
+}
+
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  background: #1a2332;
+}
+
+.leaflet-control-zoom a {
+  background-color: #1f2937 !important;
+  color: #f9fafb !important;
+  border-color: #374151 !important;
+}
+
+.leaflet-control-zoom a:hover {
+  background-color: #374151 !important;
+}

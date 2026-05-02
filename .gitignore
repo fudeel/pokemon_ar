@@ -1,0 +1,5 @@
+/admin-frontend/node_modules
+/admin-frontend/.next
+/admin-frontend/.idea
+/backend/.venv
+/backend/.idea

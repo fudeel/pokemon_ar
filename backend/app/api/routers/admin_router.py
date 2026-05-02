@@ -21,6 +21,7 @@ from app.api.schemas.admin import (
     NpcCreateRequest,
     RareWildPokemonCreateRequest,
     SpawnAreaCreateRequest,
+    SpawnAreaSetPokemonRequest,
     SpeciesUpsertRequest,
 )
 from app.api.schemas.auth import (
@@ -196,9 +197,24 @@ def create_spawn_area(
         name=payload.name,
         center=_to_geo(payload.center),
         radius_meters=payload.radius_meters,
-        primary_type=_resolve_pokemon_type(payload.primary_type),
-        secondary_type=_resolve_pokemon_type(payload.secondary_type) if payload.secondary_type else None,
-        spawn_weight=payload.spawn_weight,
+    )
+    if payload.pokemon:
+        area = container.admin_service.set_spawn_area_pokemon(
+            area.id,
+            [(entry.species_id, entry.spawn_chance) for entry in payload.pokemon],
+        )
+    return spawn_area_to_model(area)
+
+
+@router.put("/spawn-areas/{spawn_area_id}/pokemon", response_model=SpawnAreaModel)
+def set_spawn_area_pokemon(
+    spawn_area_id: int,
+    payload: SpawnAreaSetPokemonRequest,
+    container: Container = Depends(container_dep),
+) -> SpawnAreaModel:
+    area = container.admin_service.set_spawn_area_pokemon(
+        spawn_area_id,
+        [(entry.species_id, entry.spawn_chance) for entry in payload.pokemon],
     )
     return spawn_area_to_model(area)
 

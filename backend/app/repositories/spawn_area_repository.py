@@ -8,7 +8,7 @@ from datetime import datetime, timezone
 from app.core.exceptions import NotFoundError
 from app.domain.pokemon.pokemon_type import PokemonType
 from app.domain.world.geo_location import GeoLocation
-from app.domain.world.spawn_area import SpawnArea
+from app.domain.world.spawn_area import SpawnArea, SpawnAreaPokemon
 from app.repositories.base_repository import BaseRepository
 
 
@@ -43,8 +43,27 @@ class SpawnAreaRepository(BaseRepository):
                     created_by_admin_id,
                 ),
             )
-            row = conn.execute("SELECT * FROM spawn_areas WHERE id = ?", (cursor.lastrowid,)).fetchone()
-        return self._hydrate(row)
+            area_id = cursor.lastrowid
+            row = conn.execute("SELECT * FROM spawn_areas WHERE id = ?", (area_id,)).fetchone()
+        return self._hydrate(row, [])
+
+    def set_pokemon(self, spawn_area_id: int, entries: list[tuple[int, float]]) -> list[SpawnAreaPokemon]:
+        """Replace the full pokemon list for a spawn area. entries = [(species_id, spawn_chance), ...]"""
+        with self.db.transaction() as conn:
+            conn.execute("DELETE FROM spawn_area_pokemon WHERE spawn_area_id = ?", (spawn_area_id,))
+            for species_id, spawn_chance in entries:
+                conn.execute(
+                    "INSERT INTO spawn_area_pokemon (spawn_area_id, species_id, spawn_chance) VALUES (?, ?, ?)",
+                    (spawn_area_id, species_id, spawn_chance),
+                )
+        return self._load_pokemon(spawn_area_id)
+
+    def get_by_id(self, spawn_area_id: int) -> SpawnArea:
+        with self.db.connection() as conn:
+            row = conn.execute("SELECT * FROM spawn_areas WHERE id = ?", (spawn_area_id,)).fetchone()
+        if row is None:
+            raise NotFoundError(f"spawn_area {spawn_area_id} not found")
+        return self._hydrate(row, self._load_pokemon(spawn_area_id))
 
     def delete(self, spawn_area_id: int) -> None:
         with self.db.connection() as conn:
@@ -61,14 +80,37 @@ class SpawnAreaRepository(BaseRepository):
                 """,
                 (min_lat, max_lat, min_lng, max_lng),
             ).fetchall()
-        return [self._hydrate(row) for row in rows]
+        return [self._hydrate(row, self._load_pokemon(row["id"])) for row in rows]
 
     def list_all(self) -> list[SpawnArea]:
         with self.db.connection() as conn:
             rows = conn.execute("SELECT * FROM spawn_areas ORDER BY id").fetchall()
-        return [self._hydrate(row) for row in rows]
+        return [self._hydrate(row, self._load_pokemon(row["id"])) for row in rows]
 
-    def _hydrate(self, row: sqlite3.Row) -> SpawnArea:
+    # ── private ──────────────────────────────────────────────────────────────
+
+    def _load_pokemon(self, spawn_area_id: int) -> list[SpawnAreaPokemon]:
+        with self.db.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT sap.species_id, ps.name AS species_name, sap.spawn_chance
+                FROM spawn_area_pokemon sap
+                JOIN pokemon_species ps ON ps.id = sap.species_id
+                WHERE sap.spawn_area_id = ?
+                ORDER BY sap.spawn_chance DESC
+                """,
+                (spawn_area_id,),
+            ).fetchall()
+        return [
+            SpawnAreaPokemon(
+                species_id=row["species_id"],
+                species_name=row["species_name"],
+                spawn_chance=row["spawn_chance"],
+            )
+            for row in rows
+        ]
+
+    def _hydrate(self, row: sqlite3.Row, pokemon: list[SpawnAreaPokemon]) -> SpawnArea:
         return SpawnArea(
             id=row["id"],
             name=row["name"],
@@ -77,6 +119,7 @@ class SpawnAreaRepository(BaseRepository):
             primary_type=PokemonType(row["primary_type"]),
             secondary_type=PokemonType(row["secondary_type"]) if row["secondary_type"] else None,
             spawn_weight=row["spawn_weight"],
+            pokemon=pokemon,
             created_at=self.parse_timestamp(row["created_at"]) or datetime.now(timezone.utc),
             created_by_admin_id=row["created_by_admin_id"],
         )

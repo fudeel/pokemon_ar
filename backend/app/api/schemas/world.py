@@ -31,14 +31,18 @@ class NpcModel(BaseModel):
     metadata: dict
 
 
+class SpawnAreaPokemonModel(BaseModel):
+    species_id: int
+    species_name: str
+    spawn_chance: float
+
+
 class SpawnAreaModel(BaseModel):
     id: int
     name: str
     center: GeoLocationModel
     radius_meters: float
-    primary_type: str
-    secondary_type: str | None
-    spawn_weight: float
+    pokemon: list[SpawnAreaPokemonModel]
 
 
 class EventAreaModel(BaseModel):

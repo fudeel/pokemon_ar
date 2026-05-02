@@ -126,19 +126,28 @@ class AdminService:
         name: str,
         center: GeoLocation,
         radius_meters: float,
-        primary_type: PokemonType,
-        secondary_type: PokemonType | None,
-        spawn_weight: float,
     ) -> SpawnArea:
         return self._spawn_areas.create(
             name=name,
             center=center,
             radius_meters=radius_meters,
-            primary_type=primary_type,
-            secondary_type=secondary_type,
-            spawn_weight=spawn_weight,
+            primary_type=PokemonType.NORMAL,
+            secondary_type=None,
+            spawn_weight=1.0,
             created_by_admin_id=admin_id,
         )
+
+    def set_spawn_area_pokemon(
+        self,
+        spawn_area_id: int,
+        entries: list[tuple[int, float]],
+    ) -> SpawnArea:
+        """Replace the pokemon list of a spawn area and return the updated area."""
+        self._spawn_areas.set_pokemon(spawn_area_id, entries)
+        return self._spawn_areas.get_by_id(spawn_area_id)
+
+    def get_spawn_area(self, spawn_area_id: int) -> SpawnArea:
+        return self._spawn_areas.get_by_id(spawn_area_id)
 
     def delete_spawn_area(self, spawn_area_id: int) -> None:
         self._spawn_areas.delete(spawn_area_id)

@@ -37,13 +37,20 @@ class NpcCreateRequest(BaseModel):
     metadata: dict | None = None
 
 
+class SpawnAreaPokemonEntry(BaseModel):
+    species_id: int = Field(ge=1)
+    spawn_chance: float = Field(ge=0.0, le=100.0)
+
+
 class SpawnAreaCreateRequest(BaseModel):
     name: str
     center: GeoLocationModel
     radius_meters: float = Field(gt=0)
-    primary_type: str
-    secondary_type: str | None = None
-    spawn_weight: float = Field(gt=0, default=1.0)
+    pokemon: list[SpawnAreaPokemonEntry] = []
+
+
+class SpawnAreaSetPokemonRequest(BaseModel):
+    pokemon: list[SpawnAreaPokemonEntry]
 
 
 class EventAreaCreateRequest(BaseModel):

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.error_handlers import install_error_handlers
 from app.api.routers.admin_router import public_router as admin_public_router
@@ -16,6 +17,14 @@ from app.container import get_container
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Pokemon AR Backend", version="1.0.0")
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:3000"],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     install_error_handlers(app)
 
     @app.on_event("startup")

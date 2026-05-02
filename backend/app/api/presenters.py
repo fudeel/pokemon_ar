@@ -20,6 +20,7 @@ from app.api.schemas.world import (
     MapObjectModel,
     NpcModel,
     SpawnAreaModel,
+    SpawnAreaPokemonModel,
     WildPokemonModel,
     WorldSnapshotResponse,
 )
@@ -176,9 +177,14 @@ def spawn_area_to_model(area: SpawnArea) -> SpawnAreaModel:
         name=area.name,
         center=geo_to_model(area.center),
         radius_meters=area.radius_meters,
-        primary_type=area.primary_type.value,
-        secondary_type=area.secondary_type.value if area.secondary_type else None,
-        spawn_weight=area.spawn_weight,
+        pokemon=[
+            SpawnAreaPokemonModel(
+                species_id=p.species_id,
+                species_name=p.species_name,
+                spawn_chance=p.spawn_chance,
+            )
+            for p in area.pokemon
+        ],
     )
 
 
