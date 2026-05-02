@@ -96,6 +96,7 @@ class Container:
         )
         self.admin_service = AdminService(
             species_repository=self.species_repository,
+            move_repository=self.move_repository,
             map_object_repository=self.map_object_repository,
             npc_repository=self.npc_repository,
             spawn_area_repository=self.spawn_area_repository,

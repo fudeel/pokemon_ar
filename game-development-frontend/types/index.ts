@@ -1,4 +1,4 @@
-// admin-frontend/types/index.ts
+// game-development-frontend/types/index.ts
 
 export interface GeoLocation {
   latitude: number
@@ -93,33 +93,107 @@ export interface RareWildPokemon {
   expires_at: string | null
 }
 
-export interface Move {
-  id: number
-  name: string
-  type: string
-  category: 'physical' | 'special' | 'status'
-  power: number | null
-  accuracy: number | null
-  pp: number
+export interface WorldSnapshotResponse {
+  generated_at: string
+  center: GeoLocation
+  radius_meters: number
+  map_objects: MapObject[]
+  npcs: Npc[]
+  spawn_areas: SpawnArea[]
+  event_areas: EventArea[]
+  gyms: Gym[]
+  rare_wild_pokemon: RareWildPokemon[]
 }
 
-export interface LearnableMove {
-  move: Move
-  learn_level: number
-}
-
-export interface AdminToken {
+export interface PlayerLoginResponse {
   token: string
   expires_at: string
+  player_id: number
+  username: string
+  has_chosen_starter: boolean
 }
 
-export type EntityType =
-  | 'map_object'
-  | 'npc'
-  | 'spawn_area'
-  | 'event_area'
-  | 'gym'
-  | 'rare_pokemon'
+export interface PlayerRegistrationResponse {
+  id: number
+  username: string
+  has_chosen_starter: boolean
+}
+
+export interface PokemonInstance {
+  id: number
+  species: PokemonSpecies
+  nickname: string | null
+  level: number
+  current_hp: number
+  effective_stats: {
+    max_hp: number
+    attack: number
+    defense: number
+    special_attack: number
+    special_defense: number
+    speed: number
+  }
+}
+
+export interface InventorySlot {
+  item_id: number
+  item_name: string
+  category: string
+  quantity: number
+}
+
+export interface PlayerProfile {
+  player: {
+    id: number
+    username: string
+    level: number
+    experience: number
+    pokecoins: number
+    has_chosen_starter: boolean
+  }
+  pokemon: PokemonInstance[]
+  inventory: InventorySlot[]
+}
+
+/** Persisted per-player session stored in localStorage */
+export interface PlayerSession {
+  username: string
+  email: string
+  password: string
+  token: string
+  expires_at: string
+  player_id: number
+  has_chosen_starter: boolean
+}
+
+/** Client-side position (GPS or WASD-simulated) */
+export interface PlayerPosition {
+  latitude: number
+  longitude: number
+  accuracy?: number
+  source: 'gps' | 'wasd'
+}
+
+/** Client-side spawned pokemon (generated from spawn area data) */
+export interface SpawnedPokemon {
+  clientId: string
+  speciesId: number
+  speciesName: string
+  spawnAreaId: number
+  location: GeoLocation
+  isRevealed: boolean
+  level: number
+}
+
+/** Pokemon encounter initiated by player */
+export interface ActiveEncounter {
+  kind: 'common' | 'rare'
+  clientId?: string
+  rarePokemonId?: number
+  speciesName: string
+  level: number
+  location: GeoLocation
+}
 
 export const POKEMON_TYPES = [
   'normal', 'fire', 'water', 'electric', 'grass', 'ice',

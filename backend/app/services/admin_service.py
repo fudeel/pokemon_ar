@@ -15,9 +15,11 @@ from app.domain.world.geo_location import GeoLocation
 from app.domain.world.gym import Gym
 from app.domain.world.map_object import MapObject
 from app.domain.world.spawn_area import SpawnArea
+from app.domain.pokemon.move import LearnableMove, Move, MoveCategory
 from app.repositories.event_area_repository import EventAreaRepository
 from app.repositories.gym_repository import GymRepository
 from app.repositories.map_object_repository import MapObjectRepository
+from app.repositories.move_repository import MoveRepository
 from app.repositories.npc_repository import NpcRepository
 from app.repositories.pokemon_species_repository import PokemonSpeciesRepository
 from app.repositories.spawn_area_repository import SpawnAreaRepository
@@ -31,6 +33,7 @@ class AdminService:
         self,
         *,
         species_repository: PokemonSpeciesRepository,
+        move_repository: MoveRepository,
         map_object_repository: MapObjectRepository,
         npc_repository: NpcRepository,
         spawn_area_repository: SpawnAreaRepository,
@@ -39,6 +42,7 @@ class AdminService:
         wild_pokemon_repository: WildPokemonRepository,
     ) -> None:
         self._species = species_repository
+        self._moves = move_repository
         self._map_objects = map_object_repository
         self._npcs = npc_repository
         self._spawn_areas = spawn_area_repository
@@ -74,6 +78,31 @@ class AdminService:
 
     def list_species(self) -> list[PokemonSpecies]:
         return self._species.list_all()
+
+    def upsert_move(
+        self,
+        *,
+        name: str,
+        type_: PokemonType,
+        category: MoveCategory,
+        power: int | None,
+        accuracy: int | None,
+        pp: int,
+    ) -> Move:
+        return self._moves.upsert(
+            name=name, type_=type_, category=category, power=power, accuracy=accuracy, pp=pp
+        )
+
+    def list_moves(self) -> list[Move]:
+        return self._moves.list_all()
+
+    def list_species_moves(self, species_id: int) -> list[LearnableMove]:
+        return self._moves.list_learnable_all_for_species(species_id)
+
+    def set_species_moves(
+        self, species_id: int, entries: list[tuple[int, int]]
+    ) -> list[LearnableMove]:
+        return self._moves.set_learnable_for_species(species_id, entries)
 
     def create_map_object(
         self,

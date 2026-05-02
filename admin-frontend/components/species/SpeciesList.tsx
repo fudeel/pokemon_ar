@@ -8,9 +8,10 @@ import type { PokemonSpecies } from '@/types'
 interface SpeciesListProps {
   species: PokemonSpecies[]
   onEdit: (species: PokemonSpecies) => void
+  onManageMoves: (species: PokemonSpecies) => void
 }
 
-export function SpeciesList({ species, onEdit }: SpeciesListProps) {
+export function SpeciesList({ species, onEdit, onManageMoves }: SpeciesListProps) {
   if (species.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-gray-500">
@@ -73,9 +74,14 @@ export function SpeciesList({ species, onEdit }: SpeciesListProps) {
                   </div>
                 </td>
                 <td className="px-4 py-2">
-                  <Button size="sm" variant="secondary" onClick={() => onEdit(s)}>
-                    Edit
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="secondary" onClick={() => onEdit(s)}>
+                      Edit
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => onManageMoves(s)}>
+                      Moves
+                    </Button>
+                  </div>
                 </td>
               </tr>
             ))}

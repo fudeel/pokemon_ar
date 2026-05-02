@@ -7,7 +7,30 @@ from datetime import datetime
 from pydantic import BaseModel, Field
 
 from app.api.schemas.common import GeoLocationModel
-from app.api.schemas.pokemon import BaseStatsModel
+from app.api.schemas.pokemon import BaseStatsModel, MoveModel
+
+
+class MoveUpsertRequest(BaseModel):
+    name: str
+    type: str
+    category: str  # physical | special | status
+    power: int | None = None
+    accuracy: int | None = None
+    pp: int = Field(ge=1, le=40)
+
+
+class LearnableMoveModel(BaseModel):
+    move: MoveModel
+    learn_level: int
+
+
+class SpeciesMoveEntry(BaseModel):
+    move_id: int = Field(ge=1)
+    learn_level: int = Field(ge=1, le=100)
+
+
+class SpeciesMovesSetRequest(BaseModel):
+    moves: list[SpeciesMoveEntry]
 
 
 class SpeciesUpsertRequest(BaseModel):

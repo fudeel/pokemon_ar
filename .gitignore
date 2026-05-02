@@ -1,5 +1,8 @@
 /admin-frontend/node_modules
 /admin-frontend/.next
 /admin-frontend/.idea
+/game-development-frontend/node_modules
+/game-development-frontend/.next
+/game-development-frontend/.idea
 /backend/.venv
 /backend/.idea

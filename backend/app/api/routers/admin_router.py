@@ -17,11 +17,15 @@ from app.api.presenters import (
 from app.api.schemas.admin import (
     EventAreaCreateRequest,
     GymCreateRequest,
+    LearnableMoveModel,
     MapObjectCreateRequest,
+    MoveUpsertRequest,
     NpcCreateRequest,
     RareWildPokemonCreateRequest,
     SpawnAreaCreateRequest,
     SpawnAreaSetPokemonRequest,
+    SpeciesMoveEntry,
+    SpeciesMovesSetRequest,
     SpeciesUpsertRequest,
 )
 from app.api.schemas.auth import (
@@ -29,7 +33,7 @@ from app.api.schemas.auth import (
     AdminRegistrationRequest,
     TokenResponse,
 )
-from app.api.schemas.pokemon import PokemonSpeciesModel
+from app.api.schemas.pokemon import MoveModel, PokemonSpeciesModel
 from app.api.schemas.world import (
     EventAreaModel,
     GymModel,
@@ -42,6 +46,7 @@ from app.container import Container
 from app.core.exceptions import ValidationError
 from app.domain.characters.non_player_character import NPCRole
 from app.domain.characters.stats import BaseStats
+from app.domain.pokemon.move import MoveCategory
 from app.domain.pokemon.pokemon_type import PokemonType
 from app.domain.world.geo_location import GeoLocation
 
@@ -55,6 +60,13 @@ def _resolve_pokemon_type(value: str) -> PokemonType:
         return PokemonType(value)
     except ValueError as exc:
         raise ValidationError(f"unknown pokemon type '{value}'") from exc
+
+
+def _resolve_move_category(value: str) -> MoveCategory:
+    try:
+        return MoveCategory(value)
+    except ValueError as exc:
+        raise ValidationError(f"unknown move category '{value}'") from exc
 
 
 def _resolve_npc_role(value: str) -> NPCRole:
@@ -131,6 +143,78 @@ def upsert_species(
 @router.get("/species", response_model=list[PokemonSpeciesModel])
 def list_species(container: Container = Depends(container_dep)) -> list[PokemonSpeciesModel]:
     return [species_to_model(s) for s in container.admin_service.list_species()]
+
+
+@router.put("/moves", response_model=MoveModel)
+def upsert_move(
+    payload: MoveUpsertRequest,
+    container: Container = Depends(container_dep),
+) -> MoveModel:
+    move = container.admin_service.upsert_move(
+        name=payload.name,
+        type_=_resolve_pokemon_type(payload.type),
+        category=_resolve_move_category(payload.category),
+        power=payload.power,
+        accuracy=payload.accuracy,
+        pp=payload.pp,
+    )
+    return MoveModel(
+        id=move.id,
+        name=move.name,
+        type=move.type.value,
+        category=move.category.value,
+        power=move.power,
+        accuracy=move.accuracy,
+        pp=move.pp,
+    )
+
+
+@router.get("/moves", response_model=list[MoveModel])
+def list_moves(container: Container = Depends(container_dep)) -> list[MoveModel]:
+    return [
+        MoveModel(
+            id=m.id, name=m.name, type=m.type.value, category=m.category.value,
+            power=m.power, accuracy=m.accuracy, pp=m.pp,
+        )
+        for m in container.admin_service.list_moves()
+    ]
+
+
+@router.get("/species/{species_id}/moves", response_model=list[LearnableMoveModel])
+def list_species_moves(
+    species_id: int, container: Container = Depends(container_dep)
+) -> list[LearnableMoveModel]:
+    return [
+        LearnableMoveModel(
+            move=MoveModel(
+                id=lm.move.id, name=lm.move.name, type=lm.move.type.value,
+                category=lm.move.category.value, power=lm.move.power,
+                accuracy=lm.move.accuracy, pp=lm.move.pp,
+            ),
+            learn_level=lm.learn_level,
+        )
+        for lm in container.admin_service.list_species_moves(species_id)
+    ]
+
+
+@router.put("/species/{species_id}/moves", response_model=list[LearnableMoveModel])
+def set_species_moves(
+    species_id: int,
+    payload: SpeciesMovesSetRequest,
+    container: Container = Depends(container_dep),
+) -> list[LearnableMoveModel]:
+    entries = [(e.move_id, e.learn_level) for e in payload.moves]
+    return [
+        LearnableMoveModel(
+            move=MoveModel(
+                id=lm.move.id, name=lm.move.name, type=lm.move.type.value,
+                category=lm.move.category.value, power=lm.move.power,
+                accuracy=lm.move.accuracy, pp=lm.move.pp,
+            ),
+            learn_level=lm.learn_level,
+        )
+        for lm in container.admin_service.set_species_moves(species_id, entries)
+    ]
 
 
 @router.post("/map-objects", response_model=MapObjectModel, status_code=201)

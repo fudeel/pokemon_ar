@@ -4,7 +4,9 @@ import type {
   AdminToken,
   EventArea,
   Gym,
+  LearnableMove,
   MapObject,
+  Move,
   Npc,
   PokemonSpecies,
   RareWildPokemon,
@@ -44,6 +46,41 @@ export interface SpeciesUpsertPayload {
 
 export function upsertSpecies(payload: SpeciesUpsertPayload): Promise<PokemonSpecies> {
   return apiClient.put('/admin/species', payload)
+}
+
+// ── Moves ─────────────────────────────────────────────────────────────────────
+
+export function listMoves(): Promise<Move[]> {
+  return apiClient.get('/admin/moves')
+}
+
+export interface MoveUpsertPayload {
+  name: string
+  type: string
+  category: string
+  power: number | null
+  accuracy: number | null
+  pp: number
+}
+
+export function upsertMove(payload: MoveUpsertPayload): Promise<Move> {
+  return apiClient.put('/admin/moves', payload)
+}
+
+export function listSpeciesMoves(speciesId: number): Promise<LearnableMove[]> {
+  return apiClient.get(`/admin/species/${speciesId}/moves`)
+}
+
+export interface SpeciesMoveEntry {
+  move_id: number
+  learn_level: number
+}
+
+export function setSpeciesMoves(
+  speciesId: number,
+  moves: SpeciesMoveEntry[],
+): Promise<LearnableMove[]> {
+  return apiClient.put(`/admin/species/${speciesId}/moves`, { moves })
 }
 
 // ── Map Objects ───────────────────────────────────────────────────────────────

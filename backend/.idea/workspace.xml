@@ -2,20 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/../admin-frontend/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/../admin-frontend/.idea/vcs.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../admin-frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/../admin-frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/api/app_factory.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/app_factory.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/presenters.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/presenters.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/api/routers/admin_router.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/routers/admin_router.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/api/schemas/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/schemas/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/schemas/auth.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/schemas/auth.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/schemas/world.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/schemas/world.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/db/schema.sql" beforeDir="false" afterPath="$PROJECT_DIR$/app/db/schema.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/domain/world/spawn_area.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/domain/world/spawn_area.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/repositories/spawn_area_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/spawn_area_repository.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/container.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/container.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/repositories/move_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/move_repository.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/app/services/admin_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/admin_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pokemon.db" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pokemon.db-shm" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-shm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pokemon.db-wal" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-wal" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,7 +30,7 @@
   <component name="GithubPullRequestsUISettings"><![CDATA[{
   "selectedUrlAndAccountId": {
     "url": "https://github.com/fudeel/pokemon_ar.git",
-    "accountId": "d4df7260-0896-4dc3-abb4-369291125f40"
+    "accountId": "06c1cf51-3ae3-4eac-b1ec-000b07252643"
   }
 }]]></component>
   <component name="ProjectColorInfo">{
@@ -46,20 +42,20 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "Python.main.executor": "Run",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "ai.playground.ignore.import.keys.banner.in.settings": "true",
-    "git-widget-placeholder": "main",
-    "nodejs_package_manager_path": "npm",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Python.main.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;ai.playground.ignore.import.keys.banner.in.settings&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager">
     <configuration name="main" type="PythonConfigurationType" factoryName="Python" temporary="true" nameIsGenerated="true">
       <module name="pokemon_backend" />
@@ -89,7 +85,8 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-5c90d61e3bab-JavaScript-WS-242.22855.79" />
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-PY-253.30387.173" />
+        <option value="bundled-python-sdk-4762d8aabb82-6d6dccd035ac-com.jetbrains.pycharm.pro.sharedIndexes.bundled-PY-253.30387.173" />
       </set>
     </attachedChunks>
   </component>
@@ -106,6 +103,7 @@
       <workItem from="1777553371522" duration="1822000" />
       <workItem from="1777715416855" duration="713000" />
       <workItem from="1777716210128" duration="18000" />
+      <workItem from="1777720224223" duration="2012000" />
     </task>
     <servers />
   </component>

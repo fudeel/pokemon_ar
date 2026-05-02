@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/ui/Modal'
 import { SpeciesList } from '@/components/species/SpeciesList'
 import { SpeciesForm } from '@/components/species/SpeciesForm'
+import { SpeciesMovesPanel } from '@/components/species/SpeciesMovesPanel'
 import { listSpecies } from '@/lib/api/admin'
 import type { PokemonSpecies } from '@/types'
 
@@ -15,6 +16,7 @@ export default function SpeciesPage() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing] = useState<PokemonSpecies | null>(null)
+  const [managingMoves, setManagingMoves] = useState<PokemonSpecies | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -67,7 +69,11 @@ export default function SpeciesPage() {
             <div className="animate-spin w-8 h-8 rounded-full border-2 border-pokered border-t-transparent" />
           </div>
         ) : (
-          <SpeciesList species={species} onEdit={handleEdit} />
+          <SpeciesList
+            species={species}
+            onEdit={handleEdit}
+            onManageMoves={setManagingMoves}
+          />
         )}
       </div>
 
@@ -82,6 +88,16 @@ export default function SpeciesPage() {
             onSaved={handleSaved}
             onCancel={handleClose}
           />
+        </Modal>
+      )}
+
+      {managingMoves && (
+        <Modal
+          title={`Moves — #${managingMoves.id} ${managingMoves.name}`}
+          onClose={() => setManagingMoves(null)}
+          width="lg"
+        >
+          <SpeciesMovesPanel species={managingMoves} />
         </Modal>
       )}
     </div>
