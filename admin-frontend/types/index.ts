@@ -111,6 +111,18 @@ export interface LearnableMove {
 export const ITEM_CATEGORIES = ['pokeball', 'potion', 'revive', 'key', 'misc'] as const
 export type ItemCategory = typeof ITEM_CATEGORIES[number]
 
+export const ITEM_EFFECT_OPERATIONS = ['set', 'delta'] as const
+export type ItemEffectOperation = typeof ITEM_EFFECT_OPERATIONS[number]
+
+export type ItemEffectValue = boolean | number | string | null
+
+export interface ItemEffect {
+  target: string
+  attribute: string
+  operation: ItemEffectOperation
+  value: ItemEffectValue
+}
+
 export interface Item {
   id: number
   name: string
@@ -118,9 +130,21 @@ export interface Item {
   description: string
   buy_price: number | null
   sell_price: number | null
-  effect_value: number | null
+  effect: ItemEffect | null
   stackable: boolean
 }
+
+export const NERF_KEYS = [
+  'venom_poison',
+  'badly_poisoned',
+  'burn',
+  'paralysis',
+  'freeze',
+  'sleep',
+  'confusion',
+] as const
+export type NerfKey = typeof NERF_KEYS[number]
+export type Nerfs = Record<NerfKey, boolean | null>
 
 export const QUEST_OBJECTIVE_TYPES = [
   'gather_item',
@@ -199,6 +223,35 @@ export type EntityType =
   | 'event_area'
   | 'gym'
   | 'rare_pokemon'
+  | 'world_item'
+  | 'item_spawn_area'
+
+export interface WorldItemSpawn {
+  id: number
+  item_id: number
+  item_name: string
+  item_category: string
+  quantity: number
+  location: GeoLocation
+  is_hidden: boolean
+  expires_at: string | null
+}
+
+export interface ItemSpawnAreaItem {
+  item_id: number
+  item_name: string
+  item_category: string
+  spawn_chance: number
+  max_quantity: number
+}
+
+export interface ItemSpawnArea {
+  id: number
+  name: string
+  center: GeoLocation
+  radius_meters: number
+  items: ItemSpawnAreaItem[]
+}
 
 export const POKEMON_TYPES = [
   'normal', 'fire', 'water', 'electric', 'grass', 'ice',

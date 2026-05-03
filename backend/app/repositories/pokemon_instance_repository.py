@@ -2,13 +2,14 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 from datetime import datetime, timezone
 
 from app.core.exceptions import NotFoundError
 from app.domain.characters.stats import IndividualValues
 from app.domain.pokemon.move import EquippedMove
-from app.domain.pokemon.pokemon_instance import PokemonInstance
+from app.domain.pokemon.pokemon_instance import PokemonInstance, default_nerfs
 from app.domain.world.geo_location import GeoLocation
 from app.repositories.base_repository import BaseRepository
 from app.repositories.move_repository import MoveRepository
@@ -36,8 +37,8 @@ class PokemonInstanceRepository(BaseRepository):
                 INSERT INTO pokemon_instances (
                     species_id, owner_player_id, nickname, level, experience, current_hp,
                     iv_hp, iv_attack, iv_defense, iv_special_attack, iv_special_defense, iv_speed,
-                    caught_lat, caught_lng
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                    nerfs, caught_lat, caught_lng
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     instance.species.id,
@@ -52,6 +53,7 @@ class PokemonInstanceRepository(BaseRepository):
                     instance.ivs.special_attack,
                     instance.ivs.special_defense,
                     instance.ivs.speed,
+                    json.dumps(instance.nerfs),
                     instance.caught_location.latitude if instance.caught_location else None,
                     instance.caught_location.longitude if instance.caught_location else None,
                 ),
@@ -121,6 +123,15 @@ class PokemonInstanceRepository(BaseRepository):
         if row["caught_lat"] is not None and row["caught_lng"] is not None:
             caught_location = GeoLocation(latitude=row["caught_lat"], longitude=row["caught_lng"])
         caught_at = self.parse_timestamp(row["caught_at"]) or datetime.now(timezone.utc)
+        nerfs = default_nerfs()
+        raw_nerfs = row["nerfs"] if "nerfs" in row.keys() else None
+        if raw_nerfs:
+            try:
+                stored = json.loads(raw_nerfs)
+                if isinstance(stored, dict):
+                    nerfs.update(stored)
+            except json.JSONDecodeError:
+                pass
         return PokemonInstance(
             id=row["id"],
             species=species,
@@ -133,4 +144,5 @@ class PokemonInstanceRepository(BaseRepository):
             moves=moves,
             caught_at=caught_at,
             caught_location=caught_location,
+            nerfs=nerfs,
         )

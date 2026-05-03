@@ -14,11 +14,17 @@ from app.api.schemas.pokemon import (
     PokemonSpeciesModel,
 )
 from app.api.schemas.admin import (
+    ItemEffectModel,
     ItemModel,
     QuestItemRewardModel,
     QuestModel,
     QuestObjectiveModel,
     QuestRewardModel,
+)
+from app.api.schemas.world import (
+    ItemSpawnAreaItemModel,
+    ItemSpawnAreaModel,
+    WorldItemSpawnModel,
 )
 from app.api.schemas.world import (
     EventAreaModel,
@@ -37,6 +43,8 @@ from app.domain.characters.wild_pokemon import WildPokemon
 from app.domain.items.inventory import Inventory
 from app.domain.items.item import Item
 from app.domain.quests.quest import Quest
+from app.domain.world.item_spawn_area import ItemSpawnArea
+from app.domain.world.world_item_spawn import WorldItemSpawn
 from app.domain.quests.quest_objective import QuestObjective
 from app.domain.quests.quest_reward import QuestItemReward, QuestReward
 from app.domain.pokemon.move import EquippedMove, Move
@@ -138,6 +146,7 @@ def pokemon_instance_to_model(instance: PokemonInstance) -> PokemonInstanceModel
         moves=[equipped_move_to_model(m) for m in instance.moves],
         caught_at=instance.caught_at,
         caught_location=geo_to_model(instance.caught_location),
+        nerfs=dict(instance.nerfs),
     )
 
 
@@ -239,6 +248,14 @@ def wild_pokemon_to_model(wild: WildPokemon) -> WildPokemonModel:
 
 
 def item_to_model(item: Item) -> ItemModel:
+    effect_model: ItemEffectModel | None = None
+    if item.effect is not None:
+        effect_model = ItemEffectModel(
+            target=item.effect.target,
+            attribute=item.effect.attribute,
+            operation=item.effect.operation,
+            value=item.effect.value,
+        )
     return ItemModel(
         id=item.id,
         name=item.name,
@@ -246,7 +263,7 @@ def item_to_model(item: Item) -> ItemModel:
         description=item.description,
         buy_price=item.buy_price,
         sell_price=item.sell_price,
-        effect_value=item.effect_value,
+        effect=effect_model,
         stackable=item.stackable,
     )
 
@@ -304,6 +321,38 @@ def quest_to_model(quest: Quest) -> QuestModel:
     )
 
 
+def world_item_spawn_to_model(spawn: WorldItemSpawn) -> WorldItemSpawnModel:
+    return WorldItemSpawnModel(
+        id=spawn.id,
+        item_id=spawn.item_id,
+        item_name=spawn.item_name,
+        item_category=spawn.item_category,
+        quantity=spawn.quantity,
+        location=geo_to_model(spawn.location),
+        is_hidden=spawn.is_hidden,
+        expires_at=spawn.expires_at,
+    )
+
+
+def item_spawn_area_to_model(area: ItemSpawnArea) -> ItemSpawnAreaModel:
+    return ItemSpawnAreaModel(
+        id=area.id,
+        name=area.name,
+        center=geo_to_model(area.center),
+        radius_meters=area.radius_meters,
+        items=[
+            ItemSpawnAreaItemModel(
+                item_id=e.item_id,
+                item_name=e.item_name,
+                item_category=e.item_category,
+                spawn_chance=e.spawn_chance,
+                max_quantity=e.max_quantity,
+            )
+            for e in area.items
+        ],
+    )
+
+
 def snapshot_to_response(snapshot: WorldSnapshot) -> WorldSnapshotResponse:
     return WorldSnapshotResponse(
         generated_at=snapshot.generated_at,
@@ -315,4 +364,6 @@ def snapshot_to_response(snapshot: WorldSnapshot) -> WorldSnapshotResponse:
         event_areas=[event_area_to_model(e) for e in snapshot.event_areas],
         gyms=[gym_to_model(g) for g in snapshot.gyms],
         rare_wild_pokemon=[wild_pokemon_to_model(w) for w in snapshot.rare_wild_pokemon],
+        world_item_spawns=[world_item_spawn_to_model(w) for w in snapshot.world_item_spawns],
+        item_spawn_areas=[item_spawn_area_to_model(a) for a in snapshot.item_spawn_areas],
     )

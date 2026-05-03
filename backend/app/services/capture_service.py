@@ -83,7 +83,12 @@ class CaptureService:
         ball = self._items.get_by_id(pokeball_item_id)
         if ball.category is not ItemCategory.POKEBALL:
             raise ValidationError(f"item {ball.name} is not a pokeball")
-        if ball.effect_value is None or ball.effect_value <= 0:
+        catch_multiplier = (
+            ball.effect.value
+            if ball.effect is not None and isinstance(ball.effect.value, (int, float))
+            else None
+        )
+        if catch_multiplier is None or catch_multiplier <= 0:
             raise ValidationError(f"pokeball {ball.name} has no capture multiplier")
 
         inventory = self._inventory.get_for_player(player_id)
@@ -91,7 +96,7 @@ class CaptureService:
             raise InsufficientResourcesError(f"player has no {ball.name}")
 
         remaining = self._inventory.consume(player_id, ball.id, 1)
-        catch_chance = self._compute_catch_probability(wild, ball.effect_value)
+        catch_chance = self._compute_catch_probability(wild, catch_multiplier)
         roll = secrets.randbelow(1_000_000) / 1_000_000
 
         if roll >= catch_chance:
@@ -114,7 +119,7 @@ class CaptureService:
             remaining_pokeballs=remaining,
         )
 
-    def _compute_catch_probability(self, wild: WildPokemon, ball_multiplier_percent: int) -> float:
+    def _compute_catch_probability(self, wild: WildPokemon, ball_multiplier_percent: float) -> float:
         species = self._species.get_by_id(wild.species_id)
         max_hp_reference = max(wild.current_hp, 1)
         hp_factor = (3 * max_hp_reference - 2 * wild.current_hp) / (3 * max_hp_reference)

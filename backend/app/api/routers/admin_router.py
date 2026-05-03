@@ -8,6 +8,7 @@ from app.api.deps import container_dep, current_admin_id
 from app.api.presenters import (
     event_area_to_model,
     gym_to_model,
+    item_spawn_area_to_model,
     item_to_model,
     map_object_to_model,
     npc_to_model,
@@ -15,11 +16,14 @@ from app.api.presenters import (
     spawn_area_to_model,
     species_to_model,
     wild_pokemon_to_model,
+    world_item_spawn_to_model,
 )
 from app.api.schemas.admin import (
     EventAreaCreateRequest,
     GymCreateRequest,
     ItemModel,
+    ItemSpawnAreaCreateRequest,
+    ItemSpawnAreaSetItemsRequest,
     ItemUpsertRequest,
     LearnableMoveModel,
     MapObjectCreateRequest,
@@ -33,7 +37,9 @@ from app.api.schemas.admin import (
     SpeciesMoveEntry,
     SpeciesMovesSetRequest,
     SpeciesUpsertRequest,
+    WorldItemSpawnCreateRequest,
 )
+from app.api.schemas.world import ItemSpawnAreaModel, WorldItemSpawnModel
 from app.api.schemas.auth import (
     AdminLoginRequest,
     AdminRegistrationRequest,
@@ -52,7 +58,7 @@ from app.container import Container
 from app.core.exceptions import ValidationError
 from app.domain.characters.non_player_character import NPCRole
 from app.domain.characters.stats import BaseStats
-from app.domain.items.item import ItemCategory
+from app.domain.items.item import ItemCategory, ItemEffect
 from app.domain.pokemon.move import MoveCategory
 from app.domain.pokemon.pokemon_type import PokemonType
 from app.domain.quests.objective_type import QuestObjectiveType
@@ -90,6 +96,17 @@ def _resolve_item_category(value: str) -> ItemCategory:
         return ItemCategory(value)
     except ValueError as exc:
         raise ValidationError(f"unknown item category '{value}'") from exc
+
+
+def _resolve_item_effect(payload: ItemUpsertRequest) -> ItemEffect | None:
+    if payload.effect is None:
+        return None
+    return ItemEffect(
+        target=payload.effect.target,
+        attribute=payload.effect.attribute,
+        operation=payload.effect.operation,
+        value=payload.effect.value,
+    )
 
 
 def _resolve_objective_type(value: str) -> QuestObjectiveType:
@@ -466,7 +483,7 @@ def upsert_item(
         description=payload.description,
         buy_price=payload.buy_price,
         sell_price=payload.sell_price,
-        effect_value=payload.effect_value,
+        effect=_resolve_item_effect(payload),
         stackable=payload.stackable,
     )
     return item_to_model(item)
@@ -485,7 +502,7 @@ def update_item(
         description=payload.description,
         buy_price=payload.buy_price,
         sell_price=payload.sell_price,
-        effect_value=payload.effect_value,
+        effect=_resolve_item_effect(payload),
         stackable=payload.stackable,
     )
     return item_to_model(item)
@@ -558,3 +575,68 @@ def list_quests(container: Container = Depends(container_dep)) -> list[QuestMode
 @router.get("/quests/{quest_id}", response_model=QuestModel)
 def get_quest(quest_id: int, container: Container = Depends(container_dep)) -> QuestModel:
     return quest_to_model(container.admin_service.get_quest(quest_id))
+
+
+@router.post("/world-item-spawns", response_model=WorldItemSpawnModel, status_code=201)
+def place_world_item(
+    payload: WorldItemSpawnCreateRequest,
+    admin_id: int = Depends(current_admin_id),
+    container: Container = Depends(container_dep),
+) -> WorldItemSpawnModel:
+    spawn = container.admin_service.place_world_item(
+        admin_id=admin_id,
+        item_id=payload.item_id,
+        quantity=payload.quantity,
+        location=_to_geo(payload.location),
+        is_hidden=payload.is_hidden,
+        expires_at=payload.expires_at,
+    )
+    return world_item_spawn_to_model(spawn)
+
+
+@router.delete("/world-item-spawns/{spawn_id}", status_code=204)
+def deactivate_world_item(spawn_id: int, container: Container = Depends(container_dep)) -> None:
+    container.admin_service.deactivate_world_item(spawn_id)
+
+
+@router.get("/world-item-spawns", response_model=list[WorldItemSpawnModel])
+def list_world_items(container: Container = Depends(container_dep)) -> list[WorldItemSpawnModel]:
+    return [world_item_spawn_to_model(w) for w in container.admin_service.list_world_items()]
+
+
+@router.post("/item-spawn-areas", response_model=ItemSpawnAreaModel, status_code=201)
+def create_item_spawn_area(
+    payload: ItemSpawnAreaCreateRequest,
+    admin_id: int = Depends(current_admin_id),
+    container: Container = Depends(container_dep),
+) -> ItemSpawnAreaModel:
+    entries = [(e.item_id, e.spawn_chance, e.max_quantity) for e in payload.items]
+    area = container.admin_service.create_item_spawn_area(
+        admin_id=admin_id,
+        name=payload.name,
+        center=_to_geo(payload.center),
+        radius_meters=payload.radius_meters,
+        entries=entries,
+    )
+    return item_spawn_area_to_model(area)
+
+
+@router.put("/item-spawn-areas/{area_id}/items", response_model=ItemSpawnAreaModel)
+def set_item_spawn_area_items(
+    area_id: int,
+    payload: ItemSpawnAreaSetItemsRequest,
+    container: Container = Depends(container_dep),
+) -> ItemSpawnAreaModel:
+    entries = [(e.item_id, e.spawn_chance, e.max_quantity) for e in payload.items]
+    area = container.admin_service.set_item_spawn_area_items(area_id, entries)
+    return item_spawn_area_to_model(area)
+
+
+@router.delete("/item-spawn-areas/{area_id}", status_code=204)
+def delete_item_spawn_area(area_id: int, container: Container = Depends(container_dep)) -> None:
+    container.admin_service.delete_item_spawn_area(area_id)
+
+
+@router.get("/item-spawn-areas", response_model=list[ItemSpawnAreaModel])
+def list_item_spawn_areas(container: Container = Depends(container_dep)) -> list[ItemSpawnAreaModel]:
+    return [item_spawn_area_to_model(a) for a in container.admin_service.list_item_spawn_areas()]

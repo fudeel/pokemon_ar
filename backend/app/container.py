@@ -16,15 +16,18 @@ from app.repositories.move_repository import MoveRepository
 from app.repositories.npc_repository import NpcRepository
 from app.repositories.player_repository import PlayerRepository
 from app.repositories.pokemon_instance_repository import PokemonInstanceRepository
+from app.repositories.item_spawn_area_repository import ItemSpawnAreaRepository
 from app.repositories.pokemon_species_repository import PokemonSpeciesRepository
 from app.repositories.quest_repository import QuestRepository
 from app.repositories.spawn_area_repository import SpawnAreaRepository
 from app.repositories.wild_pokemon_repository import WildPokemonRepository
+from app.repositories.world_item_spawn_repository import WorldItemSpawnRepository
 from app.services.admin_service import AdminService
 from app.services.auth_service import AuthService
 from app.services.capture_service import CaptureService
 from app.services.player_profile_service import PlayerProfileService
 from app.services.starter_service import StarterService
+from app.services.world_item_collection_service import WorldItemCollectionService
 from app.services.world_service import WorldService
 
 
@@ -55,6 +58,8 @@ class Container:
         self.gym_repository = GymRepository(self.database)
         self.wild_pokemon_repository = WildPokemonRepository(self.database, self.species_repository)
         self.quest_repository = QuestRepository(self.database)
+        self.world_item_spawn_repository = WorldItemSpawnRepository(self.database, self.item_repository)
+        self.item_spawn_area_repository = ItemSpawnAreaRepository(self.database, self.item_repository)
 
         self.auth_service = AuthService(
             player_repository=self.player_repository,
@@ -79,7 +84,14 @@ class Container:
             event_area_repository=self.event_area_repository,
             gym_repository=self.gym_repository,
             wild_pokemon_repository=self.wild_pokemon_repository,
+            world_item_spawn_repository=self.world_item_spawn_repository,
+            item_spawn_area_repository=self.item_spawn_area_repository,
             snapshot_radius_meters=config.world_snapshot_radius_meters,
+        )
+        self.world_item_collection_service = WorldItemCollectionService(
+            player_repository=self.player_repository,
+            world_item_spawn_repository=self.world_item_spawn_repository,
+            inventory_repository=self.inventory_repository,
         )
         self.capture_service = CaptureService(
             player_repository=self.player_repository,
@@ -101,6 +113,8 @@ class Container:
             move_repository=self.move_repository,
             item_repository=self.item_repository,
             quest_repository=self.quest_repository,
+            world_item_spawn_repository=self.world_item_spawn_repository,
+            item_spawn_area_repository=self.item_spawn_area_repository,
             map_object_repository=self.map_object_repository,
             npc_repository=self.npc_repository,
             spawn_area_repository=self.spawn_area_repository,

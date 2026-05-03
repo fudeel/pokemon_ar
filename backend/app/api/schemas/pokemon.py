@@ -77,3 +77,4 @@ class PokemonInstanceModel(BaseModel):
     moves: list[EquippedMoveModel]
     caught_at: datetime
     caught_location: GeoLocationModel | None
+    nerfs: dict[str, bool | None]

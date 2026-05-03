@@ -18,10 +18,12 @@ import type {
   EntityType,
   EventArea,
   Gym,
+  ItemSpawnArea,
   MapObject,
   Npc,
   RareWildPokemon,
   SpawnArea,
+  WorldItemSpawn,
 } from '@/types'
 
 // Fix Leaflet default icon paths broken by webpack
@@ -44,6 +46,15 @@ function makeColoredIcon(color: string) {
   })
 }
 
+function makeHiddenItemIcon() {
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:18px;height:18px;border-radius:4px;background:#7c3aed;border:2px solid white;box-shadow:0 1px 4px rgba(0,0,0,0.6);display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:bold">?</div>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  })
+}
+
 const ICONS: Record<EntityType, L.DivIcon> = {
   map_object: makeColoredIcon('#6b7280'),
   npc: makeColoredIcon('#8b5cf6'),
@@ -51,6 +62,8 @@ const ICONS: Record<EntityType, L.DivIcon> = {
   event_area: makeColoredIcon('#f59e0b'),
   gym: makeColoredIcon('#ef4444'),
   rare_pokemon: makeColoredIcon('#ec4899'),
+  world_item: makeColoredIcon('#f97316'),
+  item_spawn_area: makeColoredIcon('#fb923c'),
 }
 
 interface ClickHandlerProps {
@@ -76,6 +89,8 @@ export interface GameMapData {
   eventAreas: EventArea[]
   gyms: Gym[]
   rarePokemon: RareWildPokemon[]
+  worldItemSpawns: WorldItemSpawn[]
+  itemSpawnAreas: ItemSpawnArea[]
 }
 
 interface GameMapProps {
@@ -89,6 +104,9 @@ interface GameMapProps {
   onDeleteEventArea: (id: number) => void
   onDeleteGym: (id: number) => void
   onDeleteRarePokemon: (id: number) => void
+  onDeactivateWorldItem: (id: number) => void
+  onEditItemSpawnArea: (area: ItemSpawnArea) => void
+  onDeleteItemSpawnArea: (id: number) => void
 }
 
 export function GameMap({
@@ -102,6 +120,9 @@ export function GameMap({
   onDeleteEventArea,
   onDeleteGym,
   onDeleteRarePokemon,
+  onDeactivateWorldItem,
+  onEditItemSpawnArea,
+  onDeleteItemSpawnArea,
 }: GameMapProps) {
   useEffect(() => {
     fixLeafletIcons()
@@ -252,6 +273,72 @@ export function GameMap({
             </div>
           </Popup>
         </Marker>
+      ))}
+
+      {data.worldItemSpawns.map((spawn) => (
+        <Marker
+          key={`wi-${spawn.id}`}
+          position={[spawn.location.latitude, spawn.location.longitude]}
+          icon={spawn.is_hidden ? makeHiddenItemIcon() : ICONS.world_item}
+        >
+          <Popup>
+            <div className="text-xs space-y-1">
+              <div className="flex items-center gap-1.5">
+                <p className="font-semibold">{spawn.item_name}</p>
+                {spawn.is_hidden ? (
+                  <span style={{ background: '#7c3aed' }} className="px-1.5 py-0.5 rounded text-white text-xs font-medium">
+                    Mystery
+                  </span>
+                ) : (
+                  <span className="px-1.5 py-0.5 rounded bg-orange-500 text-white text-xs font-medium">
+                    Visible
+                  </span>
+                )}
+              </div>
+              <p className="text-gray-500 capitalize">{spawn.item_category} · qty {spawn.quantity}</p>
+              {spawn.expires_at && <p className="text-gray-500">Expires: {formatDateTime(spawn.expires_at)}</p>}
+              <Button size="sm" variant="danger" onClick={() => onDeactivateWorldItem(spawn.id)}>
+                Deactivate
+              </Button>
+            </div>
+          </Popup>
+        </Marker>
+      ))}
+
+      {data.itemSpawnAreas.map((area) => (
+        <Circle
+          key={`isa-${area.id}`}
+          center={[area.center.latitude, area.center.longitude]}
+          radius={area.radius_meters}
+          pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.12, weight: 1.5, dashArray: '4 3' }}
+        >
+          <Popup>
+            <div className="text-xs space-y-2" style={{ minWidth: 160 }}>
+              <p className="font-semibold">{area.name}</p>
+              <p className="text-gray-500">{area.radius_meters}m radius</p>
+              {area.items.length === 0 ? (
+                <p className="text-gray-400 italic">No items configured</p>
+              ) : (
+                <ul className="space-y-0.5">
+                  {area.items.map((item) => (
+                    <li key={item.item_id} className="flex justify-between gap-3">
+                      <span>{item.item_name}</span>
+                      <span className="text-gray-400">{item.spawn_chance}% ×{item.max_quantity}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <div className="flex gap-1 pt-1">
+                <Button size="sm" variant="secondary" onClick={() => onEditItemSpawnArea(area)}>
+                  Edit
+                </Button>
+                <Button size="sm" variant="danger" onClick={() => onDeleteItemSpawnArea(area.id)}>
+                  Delete
+                </Button>
+              </div>
+            </div>
+          </Popup>
+        </Circle>
       ))}
     </MapContainer>
   )

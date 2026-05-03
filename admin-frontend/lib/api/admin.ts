@@ -5,6 +5,8 @@ import type {
   EventArea,
   Gym,
   Item,
+  ItemEffect,
+  ItemSpawnArea,
   LearnableMove,
   MapObject,
   Move,
@@ -13,6 +15,7 @@ import type {
   Quest,
   RareWildPokemon,
   SpawnArea,
+  WorldItemSpawn,
 } from '@/types'
 
 // ── Auth ──────────────────────────────────────────────────────────────────────
@@ -241,7 +244,7 @@ export interface ItemPayload {
   description: string
   buy_price: number | null
   sell_price: number | null
-  effect_value: number | null
+  effect: ItemEffect | null
   stackable: boolean
 }
 
@@ -309,6 +312,62 @@ export function updateQuest(id: number, payload: QuestPayload): Promise<Quest> {
 
 export function deleteQuest(id: number): Promise<void> {
   return apiClient.delete(`/admin/quests/${id}`)
+}
+
+// ── World Item Spawns ─────────────────────────────────────────────────────────
+
+export function listWorldItemSpawns(): Promise<WorldItemSpawn[]> {
+  return apiClient.get('/admin/world-item-spawns')
+}
+
+export interface WorldItemSpawnPayload {
+  item_id: number
+  quantity: number
+  location: { latitude: number; longitude: number }
+  is_hidden: boolean
+  expires_at: string | null
+}
+
+export function placeWorldItem(payload: WorldItemSpawnPayload): Promise<WorldItemSpawn> {
+  return apiClient.post('/admin/world-item-spawns', payload)
+}
+
+export function deactivateWorldItem(id: number): Promise<void> {
+  return apiClient.delete(`/admin/world-item-spawns/${id}`)
+}
+
+// ── Item Spawn Areas ──────────────────────────────────────────────────────────
+
+export function listItemSpawnAreas(): Promise<ItemSpawnArea[]> {
+  return apiClient.get('/admin/item-spawn-areas')
+}
+
+export interface ItemSpawnAreaEntryPayload {
+  item_id: number
+  spawn_chance: number
+  max_quantity: number
+}
+
+export interface ItemSpawnAreaPayload {
+  name: string
+  center: { latitude: number; longitude: number }
+  radius_meters: number
+  items: ItemSpawnAreaEntryPayload[]
+}
+
+export function createItemSpawnArea(payload: ItemSpawnAreaPayload): Promise<ItemSpawnArea> {
+  return apiClient.post('/admin/item-spawn-areas', payload)
+}
+
+export function setItemSpawnAreaItems(
+  id: number,
+  items: ItemSpawnAreaEntryPayload[],
+): Promise<ItemSpawnArea> {
+  return apiClient.put(`/admin/item-spawn-areas/${id}/items`, { items })
+}
+
+export function deleteItemSpawnArea(id: number): Promise<void> {
+  return apiClient.delete(`/admin/item-spawn-areas/${id}`)
 }
 
 // ── Admins ────────────────────────────────────────────────────────────────────

@@ -2,7 +2,19 @@
 'use client'
 
 import { Button } from '@/components/ui/Button'
-import type { Item } from '@/types'
+import type { Item, ItemEffect } from '@/types'
+
+function formatEffect(effect: ItemEffect | null): string {
+  if (!effect) return '—'
+  const op = effect.operation === 'delta' ? '+=' : '='
+  const value =
+    effect.value === null
+      ? 'null'
+      : typeof effect.value === 'boolean'
+        ? String(effect.value)
+        : String(effect.value)
+  return `${effect.target}.${effect.attribute} ${op} ${value}`
+}
 
 interface ItemListProps {
   items: Item[]
@@ -49,7 +61,12 @@ export function ItemList({ items, onEdit, onDelete }: ItemListProps) {
                 </td>
                 <td className="px-4 py-2 text-gray-300">{item.buy_price ?? '—'}</td>
                 <td className="px-4 py-2 text-gray-300">{item.sell_price ?? '—'}</td>
-                <td className="px-4 py-2 text-gray-300">{item.effect_value ?? '—'}</td>
+                <td
+                  className="px-4 py-2 text-gray-300 font-mono text-xs max-w-xs truncate"
+                  title={formatEffect(item.effect)}
+                >
+                  {formatEffect(item.effect)}
+                </td>
                 <td className="px-4 py-2 text-gray-300">{item.stackable ? 'Yes' : 'No'}</td>
                 <td className="px-4 py-2">
                   <div className="flex gap-1">

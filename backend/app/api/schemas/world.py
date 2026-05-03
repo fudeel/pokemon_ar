@@ -81,6 +81,33 @@ class WildPokemonModel(BaseModel):
     expires_at: datetime | None
 
 
+class WorldItemSpawnModel(BaseModel):
+    id: int
+    item_id: int
+    item_name: str
+    item_category: str
+    quantity: int
+    location: GeoLocationModel
+    is_hidden: bool
+    expires_at: datetime | None
+
+
+class ItemSpawnAreaItemModel(BaseModel):
+    item_id: int
+    item_name: str
+    item_category: str
+    spawn_chance: float
+    max_quantity: int
+
+
+class ItemSpawnAreaModel(BaseModel):
+    id: int
+    name: str
+    center: GeoLocationModel
+    radius_meters: float
+    items: list[ItemSpawnAreaItemModel]
+
+
 class WorldSnapshotResponse(BaseModel):
     generated_at: datetime
     center: GeoLocationModel
@@ -91,3 +118,5 @@ class WorldSnapshotResponse(BaseModel):
     event_areas: list[EventAreaModel]
     gyms: list[GymModel]
     rare_wild_pokemon: list[WildPokemonModel]
+    world_item_spawns: list[WorldItemSpawnModel]
+    item_spawn_areas: list[ItemSpawnAreaModel]

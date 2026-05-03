@@ -8,15 +8,20 @@ import { SpawnAreaForm } from './forms/SpawnAreaForm'
 import { EventAreaForm } from './forms/EventAreaForm'
 import { GymForm } from './forms/GymForm'
 import { RarePokemonForm } from './forms/RarePokemonForm'
+import { WorldItemForm } from './forms/WorldItemForm'
+import { ItemSpawnAreaForm } from './forms/ItemSpawnAreaForm'
 import type {
   EntityType,
   EventArea,
   Gym,
+  Item,
+  ItemSpawnArea,
   MapObject,
   Npc,
   PokemonSpecies,
   RareWildPokemon,
   SpawnArea,
+  WorldItemSpawn,
 } from '@/types'
 
 interface PlacementCoords {
@@ -28,6 +33,7 @@ interface PlacementModalProps {
   type: EntityType
   coords: PlacementCoords
   species: PokemonSpecies[]
+  items: Item[]
   onCreated: (type: EntityType, entity: unknown) => void
   onClose: () => void
 }
@@ -39,9 +45,16 @@ const TITLES: Record<EntityType, string> = {
   event_area: 'Create Event Area',
   gym: 'Place Gym',
   rare_pokemon: 'Spawn Rare Pokémon',
+  world_item: 'Place World Item',
+  item_spawn_area: 'Create Item Spawn Zone',
 }
 
-export function PlacementModal({ type, coords, species, onCreated, onClose }: PlacementModalProps) {
+const MODAL_WIDTHS: Partial<Record<EntityType, 'sm' | 'md' | 'lg'>> = {
+  spawn_area: 'md',
+  item_spawn_area: 'md',
+}
+
+export function PlacementModal({ type, coords, species, items, onCreated, onClose }: PlacementModalProps) {
   const { latitude, longitude } = coords
 
   const handleCreated = (entity: unknown) => {
@@ -50,7 +63,7 @@ export function PlacementModal({ type, coords, species, onCreated, onClose }: Pl
   }
 
   return (
-    <Modal title={TITLES[type]} onClose={onClose} width="sm">
+    <Modal title={TITLES[type]} onClose={onClose} width={MODAL_WIDTHS[type] ?? 'sm'}>
       {type === 'map_object' && (
         <MapObjectForm
           latitude={latitude}
@@ -98,6 +111,24 @@ export function PlacementModal({ type, coords, species, onCreated, onClose }: Pl
           longitude={longitude}
           species={species}
           onCreated={(p: RareWildPokemon) => handleCreated(p)}
+          onCancel={onClose}
+        />
+      )}
+      {type === 'world_item' && (
+        <WorldItemForm
+          latitude={latitude}
+          longitude={longitude}
+          items={items}
+          onCreated={(spawn: WorldItemSpawn) => handleCreated(spawn)}
+          onCancel={onClose}
+        />
+      )}
+      {type === 'item_spawn_area' && (
+        <ItemSpawnAreaForm
+          latitude={latitude}
+          longitude={longitude}
+          items={items}
+          onSaved={(area: ItemSpawnArea) => handleCreated(area)}
           onCancel={onClose}
         />
       )}

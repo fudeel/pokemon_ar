@@ -7,30 +7,39 @@ import { Header } from '@/components/layout/Header'
 import { MapToolbar } from '@/components/map/MapToolbar'
 import { PlacementModal } from '@/components/map/PlacementModal'
 import { EditSpawnAreaModal } from '@/components/map/EditSpawnAreaModal'
+import { EditItemSpawnAreaModal } from '@/components/map/EditItemSpawnAreaModal'
 import {
+  deactivateWorldItem,
   deleteEventArea,
   deleteGym,
+  deleteItemSpawnArea,
   deleteMapObject,
   deleteNpc,
   deleteRarePokemon,
   deleteSpawnArea,
   listEventAreas,
   listGyms,
+  listItemSpawnAreas,
+  listItems,
   listMapObjects,
   listNpcs,
   listRarePokemon,
   listSpawnAreas,
   listSpecies,
+  listWorldItemSpawns,
 } from '@/lib/api/admin'
 import type {
   EntityType,
   EventArea,
   Gym,
+  Item,
+  ItemSpawnArea,
   MapObject,
   Npc,
   PokemonSpecies,
   RareWildPokemon,
   SpawnArea,
+  WorldItemSpawn,
 } from '@/types'
 
 const GameMap = dynamic(
@@ -51,21 +60,28 @@ export default function MapPage() {
   const [eventAreas, setEventAreas] = useState<EventArea[]>([])
   const [gyms, setGyms] = useState<Gym[]>([])
   const [rarePokemon, setRarePokemon] = useState<RareWildPokemon[]>([])
+  const [worldItemSpawns, setWorldItemSpawns] = useState<WorldItemSpawn[]>([])
+  const [itemSpawnAreas, setItemSpawnAreas] = useState<ItemSpawnArea[]>([])
   const [species, setSpecies] = useState<PokemonSpecies[]>([])
+  const [items, setItems] = useState<Item[]>([])
 
   const [activeType, setActiveType] = useState<EntityType | null>(null)
   const [placement, setPlacement] = useState<PlacementTarget | null>(null)
   const [editingSpawnArea, setEditingSpawnArea] = useState<SpawnArea | null>(null)
+  const [editingItemSpawnArea, setEditingItemSpawnArea] = useState<ItemSpawnArea | null>(null)
 
   const loadAll = useCallback(async () => {
-    const [mos, npcList, sas, eas, gymList, rares, sp] = await Promise.all([
+    const [mos, npcList, sas, eas, gymList, rares, wisps, isas, sp, itemList] = await Promise.all([
       listMapObjects(),
       listNpcs(),
       listSpawnAreas(),
       listEventAreas(),
       listGyms(),
       listRarePokemon(),
+      listWorldItemSpawns(),
+      listItemSpawnAreas(),
       listSpecies(),
+      listItems(),
     ])
     setMapObjects(mos)
     setNpcs(npcList)
@@ -73,7 +89,10 @@ export default function MapPage() {
     setEventAreas(eas)
     setGyms(gymList)
     setRarePokemon(rares)
+    setWorldItemSpawns(wisps)
+    setItemSpawnAreas(isas)
     setSpecies(sp)
+    setItems(itemList)
   }, [])
 
   useEffect(() => {
@@ -97,6 +116,8 @@ export default function MapPage() {
         case 'event_area': setEventAreas((p) => [...p, entity as EventArea]); break
         case 'gym': setGyms((p) => [...p, entity as Gym]); break
         case 'rare_pokemon': setRarePokemon((p) => [...p, entity as RareWildPokemon]); break
+        case 'world_item': setWorldItemSpawns((p) => [...p, entity as WorldItemSpawn]); break
+        case 'item_spawn_area': setItemSpawnAreas((p) => [...p, entity as ItemSpawnArea]); break
       }
       setActiveType(null)
     },
@@ -106,6 +127,11 @@ export default function MapPage() {
   const handleSpawnAreaUpdated = useCallback((updated: SpawnArea) => {
     setSpawnAreas((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
     setEditingSpawnArea(null)
+  }, [])
+
+  const handleItemSpawnAreaUpdated = useCallback((updated: ItemSpawnArea) => {
+    setItemSpawnAreas((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
+    setEditingItemSpawnArea(null)
   }, [])
 
   const handleDeleteMapObject = useCallback(async (id: number) => {
@@ -138,9 +164,20 @@ export default function MapPage() {
     setRarePokemon((p) => p.filter((o) => o.id !== id))
   }, [])
 
+  const handleDeactivateWorldItem = useCallback(async (id: number) => {
+    await deactivateWorldItem(id)
+    setWorldItemSpawns((p) => p.filter((o) => o.id !== id))
+  }, [])
+
+  const handleDeleteItemSpawnArea = useCallback(async (id: number) => {
+    await deleteItemSpawnArea(id)
+    setItemSpawnAreas((p) => p.filter((o) => o.id !== id))
+  }, [])
+
   const totalEntities =
     mapObjects.length + npcs.length + spawnAreas.length +
-    eventAreas.length + gyms.length + rarePokemon.length
+    eventAreas.length + gyms.length + rarePokemon.length +
+    worldItemSpawns.length + itemSpawnAreas.length
 
   return (
     <div className="flex flex-col h-full">
@@ -151,7 +188,7 @@ export default function MapPage() {
       <MapToolbar activeType={activeType} onSelect={setActiveType} />
       <div className="flex-1 flex overflow-hidden">
         <GameMap
-          data={{ mapObjects, npcs, spawnAreas, eventAreas, gyms, rarePokemon }}
+          data={{ mapObjects, npcs, spawnAreas, eventAreas, gyms, rarePokemon, worldItemSpawns, itemSpawnAreas }}
           activeType={activeType}
           onMapClick={handleMapClick}
           onDeleteMapObject={handleDeleteMapObject}
@@ -161,6 +198,9 @@ export default function MapPage() {
           onDeleteEventArea={handleDeleteEventArea}
           onDeleteGym={handleDeleteGym}
           onDeleteRarePokemon={handleDeleteRarePokemon}
+          onDeactivateWorldItem={handleDeactivateWorldItem}
+          onEditItemSpawnArea={setEditingItemSpawnArea}
+          onDeleteItemSpawnArea={handleDeleteItemSpawnArea}
         />
       </div>
 
@@ -169,6 +209,7 @@ export default function MapPage() {
           type={placement.type}
           coords={{ latitude: placement.latitude, longitude: placement.longitude }}
           species={species}
+          items={items}
           onCreated={handleEntityCreated}
           onClose={() => setPlacement(null)}
         />
@@ -180,6 +221,15 @@ export default function MapPage() {
           species={species}
           onSaved={handleSpawnAreaUpdated}
           onClose={() => setEditingSpawnArea(null)}
+        />
+      )}
+
+      {editingItemSpawnArea && (
+        <EditItemSpawnAreaModal
+          area={editingItemSpawnArea}
+          items={items}
+          onSaved={handleItemSpawnAreaUpdated}
+          onClose={() => setEditingItemSpawnArea(null)}
         />
       )}
     </div>

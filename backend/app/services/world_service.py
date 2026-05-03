@@ -10,15 +10,19 @@ from app.domain.characters.wild_pokemon import WildPokemon
 from app.domain.world.event_area import EventArea
 from app.domain.world.geo_location import GeoLocation
 from app.domain.world.gym import Gym
+from app.domain.world.item_spawn_area import ItemSpawnArea
 from app.domain.world.map_object import MapObject
 from app.domain.world.spawn_area import SpawnArea
+from app.domain.world.world_item_spawn import WorldItemSpawn
 from app.repositories.event_area_repository import EventAreaRepository
 from app.repositories.gym_repository import GymRepository
+from app.repositories.item_spawn_area_repository import ItemSpawnAreaRepository
 from app.repositories.map_object_repository import MapObjectRepository
 from app.repositories.npc_repository import NpcRepository
 from app.repositories.player_repository import PlayerRepository
 from app.repositories.spawn_area_repository import SpawnAreaRepository
 from app.repositories.wild_pokemon_repository import WildPokemonRepository
+from app.repositories.world_item_spawn_repository import WorldItemSpawnRepository
 from app.services.bounding_box import BoundingBox
 
 
@@ -33,6 +37,8 @@ class WorldSnapshot:
     event_areas: list[EventArea]
     gyms: list[Gym]
     rare_wild_pokemon: list[WildPokemon]
+    world_item_spawns: list[WorldItemSpawn]
+    item_spawn_areas: list[ItemSpawnArea]
 
 
 class WorldService:
@@ -53,6 +59,8 @@ class WorldService:
         event_area_repository: EventAreaRepository,
         gym_repository: GymRepository,
         wild_pokemon_repository: WildPokemonRepository,
+        world_item_spawn_repository: WorldItemSpawnRepository,
+        item_spawn_area_repository: ItemSpawnAreaRepository,
         snapshot_radius_meters: float,
     ) -> None:
         self._players = player_repository
@@ -62,6 +70,8 @@ class WorldService:
         self._event_areas = event_area_repository
         self._gyms = gym_repository
         self._wild = wild_pokemon_repository
+        self._world_item_spawns = world_item_spawn_repository
+        self._item_spawn_areas = item_spawn_area_repository
         self._snapshot_radius = snapshot_radius_meters
 
     def build_snapshot(self, *, player_id: int, center: GeoLocation, radius_meters: float | None = None) -> WorldSnapshot:
@@ -81,6 +91,12 @@ class WorldService:
         rare = self._wild.list_active_in_bounding_box(
             instant=now, min_lat=bbox.min_lat, max_lat=bbox.max_lat, min_lng=bbox.min_lng, max_lng=bbox.max_lng
         )
+        world_items = self._world_item_spawns.list_active_in_bounding_box(
+            instant=now, min_lat=bbox.min_lat, max_lat=bbox.max_lat, min_lng=bbox.min_lng, max_lng=bbox.max_lng
+        )
+        item_spawn_areas = self._item_spawn_areas.list_in_bounding_box(
+            min_lat=bbox.min_lat, max_lat=bbox.max_lat, min_lng=bbox.min_lng, max_lng=bbox.max_lng
+        )
 
         map_objects = [m for m in map_objects if center.is_within_meters(m.location, radius)]
         npcs = [n for n in npcs if n.location and center.is_within_meters(n.location, radius)]
@@ -88,6 +104,8 @@ class WorldService:
         event_areas = [e for e in event_areas if center.is_within_meters(e.center, radius + e.radius_meters)]
         gyms = [g for g in gyms if center.is_within_meters(g.location, radius)]
         rare = [r for r in rare if r.location and center.is_within_meters(r.location, radius)]
+        world_items = [w for w in world_items if center.is_within_meters(w.location, radius)]
+        item_spawn_areas = [a for a in item_spawn_areas if center.is_within_meters(a.center, radius + a.radius_meters)]
 
         return WorldSnapshot(
             generated_at=now,
@@ -99,4 +117,6 @@ class WorldService:
             event_areas=event_areas,
             gyms=gyms,
             rare_wild_pokemon=rare,
+            world_item_spawns=world_items,
+            item_spawn_areas=item_spawn_areas,
         )

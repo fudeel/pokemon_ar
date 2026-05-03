@@ -98,13 +98,45 @@ class RareWildPokemonCreateRequest(BaseModel):
     expires_at: datetime | None = None
 
 
+class WorldItemSpawnCreateRequest(BaseModel):
+    item_id: int = Field(ge=1)
+    quantity: int = Field(default=1, ge=1)
+    location: GeoLocationModel
+    is_hidden: bool = False
+    expires_at: datetime | None = None
+
+
+class ItemSpawnAreaEntryRequest(BaseModel):
+    item_id: int = Field(ge=1)
+    spawn_chance: float = Field(gt=0, le=100)
+    max_quantity: int = Field(default=1, ge=1)
+
+
+class ItemSpawnAreaCreateRequest(BaseModel):
+    name: str = Field(min_length=1)
+    center: GeoLocationModel
+    radius_meters: float = Field(gt=0)
+    items: list[ItemSpawnAreaEntryRequest] = []
+
+
+class ItemSpawnAreaSetItemsRequest(BaseModel):
+    items: list[ItemSpawnAreaEntryRequest]
+
+
+class ItemEffectModel(BaseModel):
+    target: str = Field(min_length=1)
+    attribute: str = Field(min_length=1)
+    operation: str = Field(pattern="^(set|delta)$")
+    value: bool | int | float | str | None = None
+
+
 class ItemUpsertRequest(BaseModel):
     name: str = Field(min_length=1)
     category: str
     description: str
     buy_price: int | None = Field(default=None, ge=0)
     sell_price: int | None = Field(default=None, ge=0)
-    effect_value: int | None = None
+    effect: ItemEffectModel | None = None
     stackable: bool = True
 
 
@@ -115,7 +147,7 @@ class ItemModel(BaseModel):
     description: str
     buy_price: int | None
     sell_price: int | None
-    effect_value: int | None
+    effect: ItemEffectModel | None
     stackable: bool
 
 

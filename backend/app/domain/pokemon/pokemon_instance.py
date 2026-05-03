@@ -3,8 +3,22 @@
 from __future__ import annotations
 
 import secrets
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime
+
+NERF_KEYS: tuple[str, ...] = (
+    "venom_poison",
+    "badly_poisoned",
+    "burn",
+    "paralysis",
+    "freeze",
+    "sleep",
+    "confusion",
+)
+
+
+def default_nerfs() -> dict[str, bool | None]:
+    return {key: None for key in NERF_KEYS}
 
 from app.domain.characters.experience import ExperienceTable
 from app.domain.characters.stats import EffectiveStats, IndividualValues, StatCalculator
@@ -28,6 +42,7 @@ class PokemonInstance:
     moves: list[EquippedMove]
     caught_at: datetime
     caught_location: GeoLocation | None
+    nerfs: dict[str, bool | None] = field(default_factory=default_nerfs)
 
     @staticmethod
     def roll_random_ivs() -> IndividualValues:

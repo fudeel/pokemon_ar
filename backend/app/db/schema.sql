@@ -94,6 +94,7 @@ CREATE TABLE IF NOT EXISTS pokemon_instances (
     iv_special_attack INTEGER NOT NULL,
     iv_special_defense INTEGER NOT NULL,
     iv_speed INTEGER NOT NULL,
+    nerfs TEXT NOT NULL DEFAULT '{}',
     caught_at TEXT NOT NULL DEFAULT (datetime('now')),
     caught_lat REAL,
     caught_lng REAL,
@@ -120,7 +121,7 @@ CREATE TABLE IF NOT EXISTS items (
     description TEXT NOT NULL,
     buy_price INTEGER,
     sell_price INTEGER,
-    effect_value INTEGER,
+    effect TEXT,
     stackable INTEGER NOT NULL DEFAULT 1
 );
 
@@ -271,6 +272,59 @@ CREATE TABLE IF NOT EXISTS gyms (
 );
 
 CREATE INDEX IF NOT EXISTS idx_gyms_geo ON gyms(lat, lng);
+
+CREATE TABLE IF NOT EXISTS world_item_spawns (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    item_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL DEFAULT 1 CHECK (quantity >= 1),
+    lat REAL NOT NULL,
+    lng REAL NOT NULL,
+    expires_at TEXT,
+    is_active INTEGER NOT NULL DEFAULT 1,
+    is_hidden INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    created_by_admin_id INTEGER,
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE,
+    FOREIGN KEY (created_by_admin_id) REFERENCES admins(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_world_item_spawns_geo ON world_item_spawns(lat, lng);
+CREATE INDEX IF NOT EXISTS idx_world_item_spawns_active ON world_item_spawns(is_active);
+
+CREATE TABLE IF NOT EXISTS world_item_collections (
+    world_item_spawn_id INTEGER NOT NULL,
+    player_id INTEGER NOT NULL,
+    collected_at TEXT NOT NULL DEFAULT (datetime('now')),
+    PRIMARY KEY (world_item_spawn_id, player_id),
+    FOREIGN KEY (world_item_spawn_id) REFERENCES world_item_spawns(id) ON DELETE CASCADE,
+    FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS item_spawn_areas (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    center_lat REAL NOT NULL,
+    center_lng REAL NOT NULL,
+    radius_meters REAL NOT NULL CHECK (radius_meters > 0),
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    created_by_admin_id INTEGER,
+    FOREIGN KEY (created_by_admin_id) REFERENCES admins(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_item_spawn_areas_geo ON item_spawn_areas(center_lat, center_lng);
+
+CREATE TABLE IF NOT EXISTS item_spawn_area_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    spawn_area_id INTEGER NOT NULL,
+    item_id INTEGER NOT NULL,
+    spawn_chance REAL NOT NULL CHECK (spawn_chance > 0 AND spawn_chance <= 100),
+    max_quantity INTEGER NOT NULL DEFAULT 1 CHECK (max_quantity >= 1),
+    UNIQUE (spawn_area_id, item_id),
+    FOREIGN KEY (spawn_area_id) REFERENCES item_spawn_areas(id) ON DELETE CASCADE,
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_item_spawn_area_items ON item_spawn_area_items(spawn_area_id);
 
 CREATE TABLE IF NOT EXISTS quests (
     id INTEGER PRIMARY KEY AUTOINCREMENT,

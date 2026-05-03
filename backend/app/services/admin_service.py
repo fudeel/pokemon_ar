@@ -15,9 +15,11 @@ from app.domain.world.geo_location import GeoLocation
 from app.domain.world.gym import Gym
 from app.domain.world.map_object import MapObject
 from app.domain.world.spawn_area import SpawnArea
-from app.domain.items.item import Item, ItemCategory
+from app.domain.items.item import Item, ItemCategory, ItemEffect
 from app.domain.pokemon.move import LearnableMove, Move, MoveCategory
 from app.domain.quests.quest import Quest
+from app.domain.world.item_spawn_area import ItemSpawnArea
+from app.domain.world.world_item_spawn import WorldItemSpawn
 from app.repositories.event_area_repository import EventAreaRepository
 from app.repositories.gym_repository import GymRepository
 from app.repositories.item_repository import ItemRepository
@@ -25,6 +27,7 @@ from app.repositories.map_object_repository import MapObjectRepository
 from app.repositories.move_repository import MoveRepository
 from app.repositories.npc_repository import NpcRepository
 from app.repositories.pokemon_species_repository import PokemonSpeciesRepository
+from app.repositories.item_spawn_area_repository import ItemSpawnAreaRepository
 from app.repositories.quest_repository import (
     ItemRewardDraft,
     ObjectiveDraft,
@@ -32,6 +35,7 @@ from app.repositories.quest_repository import (
 )
 from app.repositories.spawn_area_repository import SpawnAreaRepository
 from app.repositories.wild_pokemon_repository import WildPokemonRepository
+from app.repositories.world_item_spawn_repository import WorldItemSpawnRepository
 
 
 class AdminService:
@@ -44,6 +48,8 @@ class AdminService:
         move_repository: MoveRepository,
         item_repository: ItemRepository,
         quest_repository: QuestRepository,
+        world_item_spawn_repository: WorldItemSpawnRepository,
+        item_spawn_area_repository: ItemSpawnAreaRepository,
         map_object_repository: MapObjectRepository,
         npc_repository: NpcRepository,
         spawn_area_repository: SpawnAreaRepository,
@@ -55,6 +61,8 @@ class AdminService:
         self._moves = move_repository
         self._items = item_repository
         self._quests = quest_repository
+        self._world_item_spawns = world_item_spawn_repository
+        self._item_spawn_areas = item_spawn_area_repository
         self._map_objects = map_object_repository
         self._npcs = npc_repository
         self._spawn_areas = spawn_area_repository
@@ -120,7 +128,7 @@ class AdminService:
         description: str,
         buy_price: int | None,
         sell_price: int | None,
-        effect_value: int | None,
+        effect: ItemEffect | None,
         stackable: bool,
     ) -> Item:
         if item_id is None:
@@ -130,7 +138,7 @@ class AdminService:
                 description=description,
                 buy_price=buy_price,
                 sell_price=sell_price,
-                effect_value=effect_value,
+                effect=effect,
                 stackable=stackable,
             )
         return self._items.update(
@@ -140,7 +148,7 @@ class AdminService:
             description=description,
             buy_price=buy_price,
             sell_price=sell_price,
-            effect_value=effect_value,
+            effect=effect,
             stackable=stackable,
         )
 
@@ -216,6 +224,64 @@ class AdminService:
 
     def get_quest(self, quest_id: int) -> Quest:
         return self._quests.get_by_id(quest_id)
+
+    def place_world_item(
+        self,
+        *,
+        admin_id: int,
+        item_id: int,
+        quantity: int,
+        location: GeoLocation,
+        is_hidden: bool,
+        expires_at: datetime | None,
+    ) -> WorldItemSpawn:
+        self._items.get_by_id(item_id)  # validate item exists
+        return self._world_item_spawns.create(
+            item_id=item_id,
+            quantity=quantity,
+            location=location,
+            is_hidden=is_hidden,
+            expires_at=expires_at,
+            created_by_admin_id=admin_id,
+        )
+
+    def deactivate_world_item(self, spawn_id: int) -> None:
+        self._world_item_spawns.deactivate(spawn_id)
+
+    def list_world_items(self) -> list[WorldItemSpawn]:
+        return self._world_item_spawns.list_all_active()
+
+    def create_item_spawn_area(
+        self,
+        *,
+        admin_id: int,
+        name: str,
+        center: GeoLocation,
+        radius_meters: float,
+        entries: list[tuple[int, float, int]],
+    ) -> ItemSpawnArea:
+        area = self._item_spawn_areas.create(
+            name=name,
+            center=center,
+            radius_meters=radius_meters,
+            created_by_admin_id=admin_id,
+        )
+        if entries:
+            area = self._item_spawn_areas.set_items(area.id, entries)
+        return area
+
+    def set_item_spawn_area_items(
+        self,
+        area_id: int,
+        entries: list[tuple[int, float, int]],
+    ) -> ItemSpawnArea:
+        return self._item_spawn_areas.set_items(area_id, entries)
+
+    def delete_item_spawn_area(self, area_id: int) -> None:
+        self._item_spawn_areas.delete(area_id)
+
+    def list_item_spawn_areas(self) -> list[ItemSpawnArea]:
+        return self._item_spawn_areas.list_all()
 
     def list_species_moves(self, species_id: int) -> list[LearnableMove]:
         return self._moves.list_learnable_all_for_species(species_id)

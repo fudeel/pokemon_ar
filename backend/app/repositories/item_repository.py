@@ -2,11 +2,37 @@
 
 from __future__ import annotations
 
+import json
 import sqlite3
 
 from app.core.exceptions import NotFoundError
-from app.domain.items.item import Item, ItemCategory
+from app.domain.items.item import Item, ItemCategory, ItemEffect
 from app.repositories.base_repository import BaseRepository
+
+
+def _serialize_effect(effect: ItemEffect | None) -> str | None:
+    if effect is None:
+        return None
+    return json.dumps(
+        {
+            "target": effect.target,
+            "attribute": effect.attribute,
+            "operation": effect.operation,
+            "value": effect.value,
+        }
+    )
+
+
+def _deserialize_effect(raw: str | None) -> ItemEffect | None:
+    if raw is None or raw == "":
+        return None
+    data = json.loads(raw)
+    return ItemEffect(
+        target=data["target"],
+        attribute=data["attribute"],
+        operation=data["operation"],
+        value=data["value"],
+    )
 
 
 class ItemRepository(BaseRepository):
@@ -18,23 +44,24 @@ class ItemRepository(BaseRepository):
         description: str,
         buy_price: int | None,
         sell_price: int | None,
-        effect_value: int | None,
+        effect: ItemEffect | None,
         stackable: bool,
     ) -> Item:
+        effect_json = _serialize_effect(effect)
         with self.db.connection() as conn:
             conn.execute(
                 """
-                INSERT INTO items (name, category, description, buy_price, sell_price, effect_value, stackable)
+                INSERT INTO items (name, category, description, buy_price, sell_price, effect, stackable)
                 VALUES (?, ?, ?, ?, ?, ?, ?)
                 ON CONFLICT(name) DO UPDATE SET
                     category=excluded.category,
                     description=excluded.description,
                     buy_price=excluded.buy_price,
                     sell_price=excluded.sell_price,
-                    effect_value=excluded.effect_value,
+                    effect=excluded.effect,
                     stackable=excluded.stackable
                 """,
-                (name, category.value, description, buy_price, sell_price, effect_value, int(stackable)),
+                (name, category.value, description, buy_price, sell_price, effect_json, int(stackable)),
             )
             row = conn.execute("SELECT * FROM items WHERE name = ?", (name,)).fetchone()
         return self._hydrate(row)
@@ -62,16 +89,17 @@ class ItemRepository(BaseRepository):
         description: str,
         buy_price: int | None,
         sell_price: int | None,
-        effect_value: int | None,
+        effect: ItemEffect | None,
         stackable: bool,
     ) -> Item:
+        effect_json = _serialize_effect(effect)
         with self.db.connection() as conn:
             cursor = conn.execute(
                 """
                 UPDATE items
                 SET name = ?, category = ?, description = ?,
                     buy_price = ?, sell_price = ?,
-                    effect_value = ?, stackable = ?
+                    effect = ?, stackable = ?
                 WHERE id = ?
                 """,
                 (
@@ -80,7 +108,7 @@ class ItemRepository(BaseRepository):
                     description,
                     buy_price,
                     sell_price,
-                    effect_value,
+                    effect_json,
                     int(stackable),
                     item_id,
                 ),
@@ -109,6 +137,6 @@ class ItemRepository(BaseRepository):
             description=row["description"],
             buy_price=row["buy_price"],
             sell_price=row["sell_price"],
-            effect_value=row["effect_value"],
+            effect=_deserialize_effect(row["effect"]),
             stackable=bool(row["stackable"]),
         )
