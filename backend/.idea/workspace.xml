@@ -1,18 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/app_factory.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/app_factory.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/routers/admin_router.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/routers/admin_router.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/schemas/admin.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/schemas/admin.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/container.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/container.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/repositories/move_repository.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/repositories/move_repository.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/services/admin_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/admin_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pokemon.db" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pokemon.db-shm" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-shm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pokemon.db-wal" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-wal" afterDir="false" />
-    </list>
+    <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="pokemon backend" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -104,11 +93,26 @@
       <workItem from="1777715416855" duration="713000" />
       <workItem from="1777716210128" duration="18000" />
       <workItem from="1777720224223" duration="2012000" />
+      <workItem from="1777805955717" duration="203000" />
+      <workItem from="1777806381981" duration="2446000" />
     </task>
+    <task id="LOCAL-00001" summary="pokemon backend">
+      <option name="closed" value="true" />
+      <created>1777806149427</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1777806149427</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="pokemon backend" />
+    <option name="LAST_COMMIT_MESSAGE" value="pokemon backend" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/pokemon_backend$main.coverage" NAME="main Coverage Results" MODIFIED="1777550550527" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

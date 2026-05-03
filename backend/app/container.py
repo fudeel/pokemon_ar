@@ -17,6 +17,7 @@ from app.repositories.npc_repository import NpcRepository
 from app.repositories.player_repository import PlayerRepository
 from app.repositories.pokemon_instance_repository import PokemonInstanceRepository
 from app.repositories.pokemon_species_repository import PokemonSpeciesRepository
+from app.repositories.quest_repository import QuestRepository
 from app.repositories.spawn_area_repository import SpawnAreaRepository
 from app.repositories.wild_pokemon_repository import WildPokemonRepository
 from app.services.admin_service import AdminService
@@ -53,6 +54,7 @@ class Container:
         self.event_area_repository = EventAreaRepository(self.database)
         self.gym_repository = GymRepository(self.database)
         self.wild_pokemon_repository = WildPokemonRepository(self.database, self.species_repository)
+        self.quest_repository = QuestRepository(self.database)
 
         self.auth_service = AuthService(
             player_repository=self.player_repository,
@@ -97,6 +99,8 @@ class Container:
         self.admin_service = AdminService(
             species_repository=self.species_repository,
             move_repository=self.move_repository,
+            item_repository=self.item_repository,
+            quest_repository=self.quest_repository,
             map_object_repository=self.map_object_repository,
             npc_repository=self.npc_repository,
             spawn_area_repository=self.spawn_area_repository,

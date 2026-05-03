@@ -8,8 +8,10 @@ from app.api.deps import container_dep, current_admin_id
 from app.api.presenters import (
     event_area_to_model,
     gym_to_model,
+    item_to_model,
     map_object_to_model,
     npc_to_model,
+    quest_to_model,
     spawn_area_to_model,
     species_to_model,
     wild_pokemon_to_model,
@@ -17,10 +19,14 @@ from app.api.presenters import (
 from app.api.schemas.admin import (
     EventAreaCreateRequest,
     GymCreateRequest,
+    ItemModel,
+    ItemUpsertRequest,
     LearnableMoveModel,
     MapObjectCreateRequest,
     MoveUpsertRequest,
     NpcCreateRequest,
+    QuestModel,
+    QuestUpsertRequest,
     RareWildPokemonCreateRequest,
     SpawnAreaCreateRequest,
     SpawnAreaSetPokemonRequest,
@@ -46,9 +52,12 @@ from app.container import Container
 from app.core.exceptions import ValidationError
 from app.domain.characters.non_player_character import NPCRole
 from app.domain.characters.stats import BaseStats
+from app.domain.items.item import ItemCategory
 from app.domain.pokemon.move import MoveCategory
 from app.domain.pokemon.pokemon_type import PokemonType
+from app.domain.quests.objective_type import QuestObjectiveType
 from app.domain.world.geo_location import GeoLocation
+from app.repositories.quest_repository import ItemRewardDraft, ObjectiveDraft
 
 
 public_router = APIRouter(prefix="/admin/auth", tags=["admin-auth"])
@@ -76,8 +85,58 @@ def _resolve_npc_role(value: str) -> NPCRole:
         raise ValidationError(f"unknown npc role '{value}'") from exc
 
 
+def _resolve_item_category(value: str) -> ItemCategory:
+    try:
+        return ItemCategory(value)
+    except ValueError as exc:
+        raise ValidationError(f"unknown item category '{value}'") from exc
+
+
+def _resolve_objective_type(value: str) -> QuestObjectiveType:
+    try:
+        return QuestObjectiveType(value)
+    except ValueError as exc:
+        raise ValidationError(f"unknown quest objective type '{value}'") from exc
+
+
 def _to_geo(model) -> GeoLocation:
     return GeoLocation(latitude=model.latitude, longitude=model.longitude)
+
+
+def _build_objective_drafts(payload: QuestUpsertRequest) -> list[ObjectiveDraft]:
+    drafts: list[ObjectiveDraft] = []
+    for objective in payload.objectives:
+        location = None
+        if objective.target_lat is not None and objective.target_lng is not None:
+            location = GeoLocation(
+                latitude=objective.target_lat, longitude=objective.target_lng
+            )
+        drafts.append(
+            ObjectiveDraft(
+                objective_type=_resolve_objective_type(objective.objective_type),
+                description=objective.description,
+                target_quantity=objective.target_quantity,
+                target_item_id=objective.target_item_id,
+                target_species_id=objective.target_species_id,
+                target_pokemon_type=(
+                    _resolve_pokemon_type(objective.target_pokemon_type)
+                    if objective.target_pokemon_type
+                    else None
+                ),
+                target_npc_id=objective.target_npc_id,
+                target_location=location,
+                target_radius_meters=objective.target_radius_meters,
+                target_level=objective.target_level,
+            )
+        )
+    return drafts
+
+
+def _build_item_reward_drafts(payload: QuestUpsertRequest) -> list[ItemRewardDraft]:
+    return [
+        ItemRewardDraft(item_id=reward.item_id, quantity=reward.quantity)
+        for reward in payload.item_rewards
+    ]
 
 
 @public_router.post("/login", response_model=TokenResponse)
@@ -388,3 +447,114 @@ def deactivate_rare_wild_pokemon(wild_id: int, container: Container = Depends(co
 @router.get("/rare-wild-pokemon", response_model=list[WildPokemonModel])
 def list_rare_wild_pokemon(container: Container = Depends(container_dep)) -> list[WildPokemonModel]:
     return [wild_pokemon_to_model(w) for w in container.admin_service.list_rare_wild_pokemon()]
+
+
+@router.delete("/moves/{move_id}", status_code=204)
+def delete_move(move_id: int, container: Container = Depends(container_dep)) -> None:
+    container.admin_service.delete_move(move_id)
+
+
+@router.put("/items", response_model=ItemModel)
+def upsert_item(
+    payload: ItemUpsertRequest,
+    container: Container = Depends(container_dep),
+) -> ItemModel:
+    item = container.admin_service.upsert_item(
+        item_id=None,
+        name=payload.name,
+        category=_resolve_item_category(payload.category),
+        description=payload.description,
+        buy_price=payload.buy_price,
+        sell_price=payload.sell_price,
+        effect_value=payload.effect_value,
+        stackable=payload.stackable,
+    )
+    return item_to_model(item)
+
+
+@router.put("/items/{item_id}", response_model=ItemModel)
+def update_item(
+    item_id: int,
+    payload: ItemUpsertRequest,
+    container: Container = Depends(container_dep),
+) -> ItemModel:
+    item = container.admin_service.upsert_item(
+        item_id=item_id,
+        name=payload.name,
+        category=_resolve_item_category(payload.category),
+        description=payload.description,
+        buy_price=payload.buy_price,
+        sell_price=payload.sell_price,
+        effect_value=payload.effect_value,
+        stackable=payload.stackable,
+    )
+    return item_to_model(item)
+
+
+@router.get("/items", response_model=list[ItemModel])
+def list_items(container: Container = Depends(container_dep)) -> list[ItemModel]:
+    return [item_to_model(i) for i in container.admin_service.list_items()]
+
+
+@router.delete("/items/{item_id}", status_code=204)
+def delete_item(item_id: int, container: Container = Depends(container_dep)) -> None:
+    container.admin_service.delete_item(item_id)
+
+
+@router.post("/quests", response_model=QuestModel, status_code=201)
+def create_quest(
+    payload: QuestUpsertRequest,
+    admin_id: int = Depends(current_admin_id),
+    container: Container = Depends(container_dep),
+) -> QuestModel:
+    quest = container.admin_service.create_quest(
+        admin_id=admin_id,
+        title=payload.title,
+        description=payload.description,
+        minimum_level=payload.minimum_level,
+        reward_pokecoins=payload.reward_pokecoins,
+        reward_experience=payload.reward_experience,
+        time_limit_seconds=payload.time_limit_seconds,
+        is_repeatable=payload.is_repeatable,
+        follow_up_quest_id=payload.follow_up_quest_id,
+        objectives=_build_objective_drafts(payload),
+        item_rewards=_build_item_reward_drafts(payload),
+    )
+    return quest_to_model(quest)
+
+
+@router.put("/quests/{quest_id}", response_model=QuestModel)
+def update_quest(
+    quest_id: int,
+    payload: QuestUpsertRequest,
+    container: Container = Depends(container_dep),
+) -> QuestModel:
+    quest = container.admin_service.update_quest(
+        quest_id=quest_id,
+        title=payload.title,
+        description=payload.description,
+        minimum_level=payload.minimum_level,
+        reward_pokecoins=payload.reward_pokecoins,
+        reward_experience=payload.reward_experience,
+        time_limit_seconds=payload.time_limit_seconds,
+        is_repeatable=payload.is_repeatable,
+        follow_up_quest_id=payload.follow_up_quest_id,
+        objectives=_build_objective_drafts(payload),
+        item_rewards=_build_item_reward_drafts(payload),
+    )
+    return quest_to_model(quest)
+
+
+@router.delete("/quests/{quest_id}", status_code=204)
+def delete_quest(quest_id: int, container: Container = Depends(container_dep)) -> None:
+    container.admin_service.delete_quest(quest_id)
+
+
+@router.get("/quests", response_model=list[QuestModel])
+def list_quests(container: Container = Depends(container_dep)) -> list[QuestModel]:
+    return [quest_to_model(q) for q in container.admin_service.list_quests()]
+
+
+@router.get("/quests/{quest_id}", response_model=QuestModel)
+def get_quest(quest_id: int, container: Container = Depends(container_dep)) -> QuestModel:
+    return quest_to_model(container.admin_service.get_quest(quest_id))

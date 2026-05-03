@@ -108,6 +108,85 @@ export interface LearnableMove {
   learn_level: number
 }
 
+export const ITEM_CATEGORIES = ['pokeball', 'potion', 'revive', 'key', 'misc'] as const
+export type ItemCategory = typeof ITEM_CATEGORIES[number]
+
+export interface Item {
+  id: number
+  name: string
+  category: ItemCategory
+  description: string
+  buy_price: number | null
+  sell_price: number | null
+  effect_value: number | null
+  stackable: boolean
+}
+
+export const QUEST_OBJECTIVE_TYPES = [
+  'gather_item',
+  'defeat_wild_pokemon',
+  'defeat_trainer',
+  'deliver_item',
+  'talk_to_npc',
+  'explore_area',
+  'catch_pokemon',
+  'escort_npc',
+  'reach_level',
+] as const
+export type QuestObjectiveType = typeof QUEST_OBJECTIVE_TYPES[number]
+
+export const QUEST_OBJECTIVE_LABELS: Record<QuestObjectiveType, string> = {
+  gather_item: 'Gather items',
+  defeat_wild_pokemon: 'Defeat wild Pokémon',
+  defeat_trainer: 'Defeat NPC trainer',
+  deliver_item: 'Deliver item to NPC',
+  talk_to_npc: 'Talk to NPC',
+  explore_area: 'Explore area',
+  catch_pokemon: 'Catch Pokémon',
+  escort_npc: 'Escort NPC',
+  reach_level: 'Reach player level',
+}
+
+export interface QuestObjective {
+  id: number
+  order: number
+  objective_type: QuestObjectiveType
+  description: string
+  target_quantity: number
+  target_item_id: number | null
+  target_species_id: number | null
+  target_pokemon_type: string | null
+  target_npc_id: number | null
+  target_lat: number | null
+  target_lng: number | null
+  target_radius_meters: number | null
+  target_level: number | null
+}
+
+export interface QuestItemReward {
+  item_id: number
+  item_name: string
+  quantity: number
+}
+
+export interface QuestReward {
+  pokecoins: number
+  experience: number
+  items: QuestItemReward[]
+}
+
+export interface Quest {
+  id: number
+  title: string
+  description: string
+  minimum_level: number
+  time_limit_seconds: number | null
+  is_repeatable: boolean
+  follow_up_quest_id: number | null
+  objectives: QuestObjective[]
+  reward: QuestReward
+}
+
 export interface AdminToken {
   token: string
   expires_at: string

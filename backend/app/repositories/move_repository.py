@@ -47,6 +47,12 @@ class MoveRepository(BaseRepository):
             ).fetchall()
         return [LearnableMove(move=self._hydrate(row), learn_level=row["learn_level"]) for row in rows]
 
+    def delete(self, move_id: int) -> None:
+        with self.db.connection() as conn:
+            cursor = conn.execute("DELETE FROM moves WHERE id = ?", (move_id,))
+        if cursor.rowcount == 0:
+            raise NotFoundError(f"move {move_id} not found")
+
     def list_all(self) -> list[Move]:
         with self.db.connection() as conn:
             rows = conn.execute("SELECT * FROM moves ORDER BY name ASC").fetchall()

@@ -13,6 +13,13 @@ from app.api.schemas.pokemon import (
     PokemonInstanceModel,
     PokemonSpeciesModel,
 )
+from app.api.schemas.admin import (
+    ItemModel,
+    QuestItemRewardModel,
+    QuestModel,
+    QuestObjectiveModel,
+    QuestRewardModel,
+)
 from app.api.schemas.world import (
     EventAreaModel,
     GymDefenderModel,
@@ -28,6 +35,10 @@ from app.domain.characters.non_player_character import NonPlayerCharacter
 from app.domain.characters.player import Player
 from app.domain.characters.wild_pokemon import WildPokemon
 from app.domain.items.inventory import Inventory
+from app.domain.items.item import Item
+from app.domain.quests.quest import Quest
+from app.domain.quests.quest_objective import QuestObjective
+from app.domain.quests.quest_reward import QuestItemReward, QuestReward
 from app.domain.pokemon.move import EquippedMove, Move
 from app.domain.pokemon.pokemon_instance import PokemonInstance
 from app.domain.pokemon.pokemon_species import PokemonSpecies
@@ -224,6 +235,72 @@ def wild_pokemon_to_model(wild: WildPokemon) -> WildPokemonModel:
         current_hp=wild.current_hp,
         location=geo_to_model(wild.location),
         expires_at=wild.expires_at,
+    )
+
+
+def item_to_model(item: Item) -> ItemModel:
+    return ItemModel(
+        id=item.id,
+        name=item.name,
+        category=item.category.value,
+        description=item.description,
+        buy_price=item.buy_price,
+        sell_price=item.sell_price,
+        effect_value=item.effect_value,
+        stackable=item.stackable,
+    )
+
+
+def quest_objective_to_model(objective: QuestObjective) -> QuestObjectiveModel:
+    location = objective.target_location
+    return QuestObjectiveModel(
+        id=objective.id,
+        order=objective.order,
+        objective_type=objective.objective_type.value,
+        description=objective.description,
+        target_quantity=objective.target_quantity,
+        target_item_id=objective.target_item_id,
+        target_species_id=objective.target_species_id,
+        target_pokemon_type=(
+            objective.target_pokemon_type.value
+            if objective.target_pokemon_type
+            else None
+        ),
+        target_npc_id=objective.target_npc_id,
+        target_lat=location.latitude if location else None,
+        target_lng=location.longitude if location else None,
+        target_radius_meters=objective.target_radius_meters,
+        target_level=objective.target_level,
+    )
+
+
+def quest_item_reward_to_model(reward: QuestItemReward) -> QuestItemRewardModel:
+    return QuestItemRewardModel(
+        item_id=reward.item_id,
+        item_name=reward.item_name,
+        quantity=reward.quantity,
+    )
+
+
+def quest_reward_to_model(reward: QuestReward) -> QuestRewardModel:
+    return QuestRewardModel(
+        pokecoins=reward.pokecoins,
+        experience=reward.experience,
+        items=[quest_item_reward_to_model(r) for r in reward.items],
+    )
+
+
+def quest_to_model(quest: Quest) -> QuestModel:
+    return QuestModel(
+        id=quest.id,
+        title=quest.title,
+        description=quest.description,
+        minimum_level=quest.minimum_level,
+        time_limit_seconds=quest.time_limit_seconds,
+        is_repeatable=quest.is_repeatable,
+        follow_up_quest_id=quest.follow_up_quest_id,
+        objectives=[quest_objective_to_model(o) for o in quest.objectives],
+        reward=quest_reward_to_model(quest.reward),
     )
 
 

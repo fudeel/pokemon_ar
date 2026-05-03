@@ -4,11 +4,13 @@ import type {
   AdminToken,
   EventArea,
   Gym,
+  Item,
   LearnableMove,
   MapObject,
   Move,
   Npc,
   PokemonSpecies,
+  Quest,
   RareWildPokemon,
   SpawnArea,
 } from '@/types'
@@ -65,6 +67,10 @@ export interface MoveUpsertPayload {
 
 export function upsertMove(payload: MoveUpsertPayload): Promise<Move> {
   return apiClient.put('/admin/moves', payload)
+}
+
+export function deleteMove(id: number): Promise<void> {
+  return apiClient.delete(`/admin/moves/${id}`)
 }
 
 export function listSpeciesMoves(speciesId: number): Promise<LearnableMove[]> {
@@ -221,6 +227,88 @@ export function createRarePokemon(payload: RarePokemonPayload): Promise<RareWild
 
 export function deleteRarePokemon(id: number): Promise<void> {
   return apiClient.delete(`/admin/rare-wild-pokemon/${id}`)
+}
+
+// ── Items ─────────────────────────────────────────────────────────────────────
+
+export function listItems(): Promise<Item[]> {
+  return apiClient.get('/admin/items')
+}
+
+export interface ItemPayload {
+  name: string
+  category: string
+  description: string
+  buy_price: number | null
+  sell_price: number | null
+  effect_value: number | null
+  stackable: boolean
+}
+
+export function createItem(payload: ItemPayload): Promise<Item> {
+  return apiClient.put('/admin/items', payload)
+}
+
+export function updateItem(id: number, payload: ItemPayload): Promise<Item> {
+  return apiClient.put(`/admin/items/${id}`, payload)
+}
+
+export function deleteItem(id: number): Promise<void> {
+  return apiClient.delete(`/admin/items/${id}`)
+}
+
+// ── Quests ────────────────────────────────────────────────────────────────────
+
+export function listQuests(): Promise<Quest[]> {
+  return apiClient.get('/admin/quests')
+}
+
+export function getQuest(id: number): Promise<Quest> {
+  return apiClient.get(`/admin/quests/${id}`)
+}
+
+export interface QuestObjectivePayload {
+  objective_type: string
+  description: string
+  target_quantity: number
+  target_item_id: number | null
+  target_species_id: number | null
+  target_pokemon_type: string | null
+  target_npc_id: number | null
+  target_lat: number | null
+  target_lng: number | null
+  target_radius_meters: number | null
+  target_level: number | null
+}
+
+export interface QuestItemRewardPayload {
+  item_id: number
+  quantity: number
+}
+
+export interface QuestPayload {
+  title: string
+  description: string
+  minimum_level: number
+  reward_pokecoins: number
+  reward_experience: number
+  time_limit_seconds: number | null
+  is_repeatable: boolean
+  follow_up_quest_id: number | null
+  objectives: QuestObjectivePayload[]
+  item_rewards: QuestItemRewardPayload[]
+}
+
+export function createQuest(payload: QuestPayload): Promise<Quest> {
+  return apiClient.post('/admin/quests', payload)
+}
+
+export function updateQuest(id: number, payload: QuestPayload): Promise<Quest> {
+  return apiClient.put(`/admin/quests/${id}`, payload)
+}
+
+export function deleteQuest(id: number): Promise<void> {
+  return apiClient.delete(`/admin/quests/${id}`)
 }
 
 // ── Admins ────────────────────────────────────────────────────────────────────

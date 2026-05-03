@@ -53,6 +53,49 @@ class ItemRepository(BaseRepository):
             raise NotFoundError(f"item '{name}' not found")
         return self._hydrate(row)
 
+    def update(
+        self,
+        *,
+        item_id: int,
+        name: str,
+        category: ItemCategory,
+        description: str,
+        buy_price: int | None,
+        sell_price: int | None,
+        effect_value: int | None,
+        stackable: bool,
+    ) -> Item:
+        with self.db.connection() as conn:
+            cursor = conn.execute(
+                """
+                UPDATE items
+                SET name = ?, category = ?, description = ?,
+                    buy_price = ?, sell_price = ?,
+                    effect_value = ?, stackable = ?
+                WHERE id = ?
+                """,
+                (
+                    name,
+                    category.value,
+                    description,
+                    buy_price,
+                    sell_price,
+                    effect_value,
+                    int(stackable),
+                    item_id,
+                ),
+            )
+            if cursor.rowcount == 0:
+                raise NotFoundError(f"item {item_id} not found")
+            row = conn.execute("SELECT * FROM items WHERE id = ?", (item_id,)).fetchone()
+        return self._hydrate(row)
+
+    def delete(self, item_id: int) -> None:
+        with self.db.connection() as conn:
+            cursor = conn.execute("DELETE FROM items WHERE id = ?", (item_id,))
+        if cursor.rowcount == 0:
+            raise NotFoundError(f"item {item_id} not found")
+
     def list_all(self) -> list[Item]:
         with self.db.connection() as conn:
             rows = conn.execute("SELECT * FROM items ORDER BY id").fetchall()

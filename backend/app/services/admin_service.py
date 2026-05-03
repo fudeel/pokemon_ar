@@ -15,13 +15,21 @@ from app.domain.world.geo_location import GeoLocation
 from app.domain.world.gym import Gym
 from app.domain.world.map_object import MapObject
 from app.domain.world.spawn_area import SpawnArea
+from app.domain.items.item import Item, ItemCategory
 from app.domain.pokemon.move import LearnableMove, Move, MoveCategory
+from app.domain.quests.quest import Quest
 from app.repositories.event_area_repository import EventAreaRepository
 from app.repositories.gym_repository import GymRepository
+from app.repositories.item_repository import ItemRepository
 from app.repositories.map_object_repository import MapObjectRepository
 from app.repositories.move_repository import MoveRepository
 from app.repositories.npc_repository import NpcRepository
 from app.repositories.pokemon_species_repository import PokemonSpeciesRepository
+from app.repositories.quest_repository import (
+    ItemRewardDraft,
+    ObjectiveDraft,
+    QuestRepository,
+)
 from app.repositories.spawn_area_repository import SpawnAreaRepository
 from app.repositories.wild_pokemon_repository import WildPokemonRepository
 
@@ -34,6 +42,8 @@ class AdminService:
         *,
         species_repository: PokemonSpeciesRepository,
         move_repository: MoveRepository,
+        item_repository: ItemRepository,
+        quest_repository: QuestRepository,
         map_object_repository: MapObjectRepository,
         npc_repository: NpcRepository,
         spawn_area_repository: SpawnAreaRepository,
@@ -43,6 +53,8 @@ class AdminService:
     ) -> None:
         self._species = species_repository
         self._moves = move_repository
+        self._items = item_repository
+        self._quests = quest_repository
         self._map_objects = map_object_repository
         self._npcs = npc_repository
         self._spawn_areas = spawn_area_repository
@@ -95,6 +107,115 @@ class AdminService:
 
     def list_moves(self) -> list[Move]:
         return self._moves.list_all()
+
+    def delete_move(self, move_id: int) -> None:
+        self._moves.delete(move_id)
+
+    def upsert_item(
+        self,
+        *,
+        item_id: int | None,
+        name: str,
+        category: ItemCategory,
+        description: str,
+        buy_price: int | None,
+        sell_price: int | None,
+        effect_value: int | None,
+        stackable: bool,
+    ) -> Item:
+        if item_id is None:
+            return self._items.upsert(
+                name=name,
+                category=category,
+                description=description,
+                buy_price=buy_price,
+                sell_price=sell_price,
+                effect_value=effect_value,
+                stackable=stackable,
+            )
+        return self._items.update(
+            item_id=item_id,
+            name=name,
+            category=category,
+            description=description,
+            buy_price=buy_price,
+            sell_price=sell_price,
+            effect_value=effect_value,
+            stackable=stackable,
+        )
+
+    def list_items(self) -> list[Item]:
+        return self._items.list_all()
+
+    def delete_item(self, item_id: int) -> None:
+        self._items.delete(item_id)
+
+    def create_quest(
+        self,
+        *,
+        admin_id: int,
+        title: str,
+        description: str,
+        minimum_level: int,
+        reward_pokecoins: int,
+        reward_experience: int,
+        time_limit_seconds: int | None,
+        is_repeatable: bool,
+        follow_up_quest_id: int | None,
+        objectives: list[ObjectiveDraft],
+        item_rewards: list[ItemRewardDraft],
+    ) -> Quest:
+        return self._quests.create(
+            title=title,
+            description=description,
+            minimum_level=minimum_level,
+            reward_pokecoins=reward_pokecoins,
+            reward_experience=reward_experience,
+            time_limit_seconds=time_limit_seconds,
+            is_repeatable=is_repeatable,
+            follow_up_quest_id=follow_up_quest_id,
+            objectives=objectives,
+            item_rewards=item_rewards,
+            created_by_admin_id=admin_id,
+        )
+
+    def update_quest(
+        self,
+        *,
+        quest_id: int,
+        title: str,
+        description: str,
+        minimum_level: int,
+        reward_pokecoins: int,
+        reward_experience: int,
+        time_limit_seconds: int | None,
+        is_repeatable: bool,
+        follow_up_quest_id: int | None,
+        objectives: list[ObjectiveDraft],
+        item_rewards: list[ItemRewardDraft],
+    ) -> Quest:
+        return self._quests.update(
+            quest_id=quest_id,
+            title=title,
+            description=description,
+            minimum_level=minimum_level,
+            reward_pokecoins=reward_pokecoins,
+            reward_experience=reward_experience,
+            time_limit_seconds=time_limit_seconds,
+            is_repeatable=is_repeatable,
+            follow_up_quest_id=follow_up_quest_id,
+            objectives=objectives,
+            item_rewards=item_rewards,
+        )
+
+    def delete_quest(self, quest_id: int) -> None:
+        self._quests.delete(quest_id)
+
+    def list_quests(self) -> list[Quest]:
+        return self._quests.list_all()
+
+    def get_quest(self, quest_id: int) -> Quest:
+        return self._quests.get_by_id(quest_id)
 
     def list_species_moves(self, species_id: int) -> list[LearnableMove]:
         return self._moves.list_learnable_all_for_species(species_id)

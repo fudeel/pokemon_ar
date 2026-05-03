@@ -272,6 +272,66 @@ CREATE TABLE IF NOT EXISTS gyms (
 
 CREATE INDEX IF NOT EXISTS idx_gyms_geo ON gyms(lat, lng);
 
+CREATE TABLE IF NOT EXISTS quests (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    title TEXT NOT NULL,
+    description TEXT NOT NULL,
+    minimum_level INTEGER NOT NULL DEFAULT 1 CHECK (minimum_level >= 1),
+    reward_pokecoins INTEGER NOT NULL DEFAULT 0 CHECK (reward_pokecoins >= 0),
+    reward_experience INTEGER NOT NULL DEFAULT 0 CHECK (reward_experience >= 0),
+    time_limit_seconds INTEGER,
+    is_repeatable INTEGER NOT NULL DEFAULT 0,
+    follow_up_quest_id INTEGER,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    created_by_admin_id INTEGER,
+    FOREIGN KEY (follow_up_quest_id) REFERENCES quests(id) ON DELETE SET NULL,
+    FOREIGN KEY (created_by_admin_id) REFERENCES admins(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS quest_objectives (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    quest_id INTEGER NOT NULL,
+    objective_order INTEGER NOT NULL CHECK (objective_order >= 1),
+    objective_type TEXT NOT NULL CHECK (objective_type IN (
+        'gather_item','defeat_wild_pokemon','defeat_trainer','deliver_item',
+        'talk_to_npc','explore_area','catch_pokemon','escort_npc','reach_level'
+    )),
+    description TEXT NOT NULL,
+    target_quantity INTEGER NOT NULL DEFAULT 1 CHECK (target_quantity >= 1),
+    target_item_id INTEGER,
+    target_species_id INTEGER,
+    target_pokemon_type TEXT,
+    target_npc_id INTEGER,
+    target_lat REAL,
+    target_lng REAL,
+    target_radius_meters REAL,
+    target_level INTEGER,
+    UNIQUE (quest_id, objective_order),
+    FOREIGN KEY (quest_id) REFERENCES quests(id) ON DELETE CASCADE,
+    FOREIGN KEY (target_item_id) REFERENCES items(id) ON DELETE SET NULL,
+    FOREIGN KEY (target_species_id) REFERENCES pokemon_species(id) ON DELETE SET NULL,
+    FOREIGN KEY (target_npc_id) REFERENCES npcs(id) ON DELETE SET NULL
+);
+
+CREATE INDEX IF NOT EXISTS idx_quest_objectives_quest ON quest_objectives(quest_id);
+
+CREATE TABLE IF NOT EXISTS quest_item_rewards (
+    quest_id INTEGER NOT NULL,
+    item_id INTEGER NOT NULL,
+    quantity INTEGER NOT NULL CHECK (quantity > 0),
+    PRIMARY KEY (quest_id, item_id),
+    FOREIGN KEY (quest_id) REFERENCES quests(id) ON DELETE CASCADE,
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS npc_quests (
+    npc_id INTEGER NOT NULL,
+    quest_id INTEGER NOT NULL,
+    PRIMARY KEY (npc_id, quest_id),
+    FOREIGN KEY (npc_id) REFERENCES npcs(id) ON DELETE CASCADE,
+    FOREIGN KEY (quest_id) REFERENCES quests(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS gym_defenders (
     gym_id INTEGER NOT NULL,
     slot INTEGER NOT NULL CHECK (slot BETWEEN 1 AND 6),
