@@ -9,6 +9,12 @@ from datetime import datetime, timezone
 from app.core.exceptions import NotFoundError
 from app.domain.world.event_area import EventArea
 from app.domain.world.geo_location import GeoLocation
+from app.domain.world.polygon import (
+    bounding_radius_meters,
+    centroid,
+    hydrate_polygon,
+    serialize_polygon,
+)
 from app.repositories.base_repository import BaseRepository
 
 
@@ -18,27 +24,29 @@ class EventAreaRepository(BaseRepository):
         *,
         name: str,
         description: str | None,
-        center: GeoLocation,
-        radius_meters: float,
+        polygon: tuple[GeoLocation, ...],
         starts_at: datetime,
         ends_at: datetime,
         metadata: dict | None,
         created_by_admin_id: int | None,
     ) -> EventArea:
+        center = centroid(polygon)
+        radius = bounding_radius_meters(polygon, center)
         with self.db.connection() as conn:
             cursor = conn.execute(
                 """
                 INSERT INTO event_areas (
-                    name, description, center_lat, center_lng, radius_meters,
+                    name, description, center_lat, center_lng, radius_meters, polygon_points,
                     starts_at, ends_at, metadata, created_by_admin_id
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     name,
                     description,
                     center.latitude,
                     center.longitude,
-                    radius_meters,
+                    radius,
+                    serialize_polygon(polygon),
                     self.format_timestamp(starts_at),
                     self.format_timestamp(ends_at),
                     json.dumps(metadata) if metadata else None,
@@ -84,12 +92,16 @@ class EventAreaRepository(BaseRepository):
     def _hydrate(self, row: sqlite3.Row) -> EventArea:
         starts_at = self.parse_timestamp(row["starts_at"]) or datetime.now(timezone.utc)
         ends_at = self.parse_timestamp(row["ends_at"]) or datetime.now(timezone.utc)
+        polygon = hydrate_polygon(
+            payload=row["polygon_points"],
+            fallback_center=GeoLocation(latitude=row["center_lat"], longitude=row["center_lng"]),
+            fallback_radius_meters=row["radius_meters"],
+        )
         return EventArea(
             id=row["id"],
             name=row["name"],
             description=row["description"],
-            center=GeoLocation(latitude=row["center_lat"], longitude=row["center_lng"]),
-            radius_meters=row["radius_meters"],
+            polygon=polygon,
             starts_at=starts_at,
             ends_at=ends_at,
             metadata=json.loads(row["metadata"]) if row["metadata"] else {},

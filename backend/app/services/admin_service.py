@@ -256,14 +256,12 @@ class AdminService:
         *,
         admin_id: int,
         name: str,
-        center: GeoLocation,
-        radius_meters: float,
+        polygon: tuple[GeoLocation, ...],
         entries: list[tuple[int, float, int]],
     ) -> ItemSpawnArea:
         area = self._item_spawn_areas.create(
             name=name,
-            center=center,
-            radius_meters=radius_meters,
+            polygon=polygon,
             created_by_admin_id=admin_id,
         )
         if entries:
@@ -340,13 +338,11 @@ class AdminService:
         *,
         admin_id: int,
         name: str,
-        center: GeoLocation,
-        radius_meters: float,
+        polygon: tuple[GeoLocation, ...],
     ) -> SpawnArea:
         return self._spawn_areas.create(
             name=name,
-            center=center,
-            radius_meters=radius_meters,
+            polygon=polygon,
             primary_type=PokemonType.NORMAL,
             secondary_type=None,
             spawn_weight=1.0,
@@ -377,8 +373,7 @@ class AdminService:
         admin_id: int,
         name: str,
         description: str | None,
-        center: GeoLocation,
-        radius_meters: float,
+        polygon: tuple[GeoLocation, ...],
         starts_at: datetime,
         ends_at: datetime,
         metadata: dict | None,
@@ -386,8 +381,7 @@ class AdminService:
         return self._event_areas.create(
             name=name,
             description=description,
-            center=center,
-            radius_meters=radius_meters,
+            polygon=polygon,
             starts_at=starts_at,
             ends_at=ends_at,
             metadata=metadata,

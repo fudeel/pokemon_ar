@@ -7,19 +7,17 @@ import { Button } from '@/components/ui/Button'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { createEventArea } from '@/lib/api/admin'
 import { fromLocalDatetimeInput } from '@/lib/utils'
-import type { EventArea } from '@/types'
+import type { EventArea, GeoLocation } from '@/types'
 
 interface EventAreaFormProps {
-  latitude: number
-  longitude: number
+  polygon: GeoLocation[]
   onCreated: (area: EventArea) => void
   onCancel: () => void
 }
 
-export function EventAreaForm({ latitude, longitude, onCreated, onCancel }: EventAreaFormProps) {
+export function EventAreaForm({ polygon, onCreated, onCancel }: EventAreaFormProps) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
-  const [radius, setRadius] = useState('300')
   const [startsAt, setStartsAt] = useState('')
   const [endsAt, setEndsAt] = useState('')
   const [loading, setLoading] = useState(false)
@@ -30,11 +28,13 @@ export function EventAreaForm({ latitude, longitude, onCreated, onCancel }: Even
     setError(null)
     setLoading(true)
     try {
+      if (polygon.length < 3) {
+        throw new Error('Polygon needs at least 3 points')
+      }
       const area = await createEventArea({
         name: name.trim(),
         description: description.trim() || null,
-        center: { latitude, longitude },
-        radius_meters: parseFloat(radius),
+        polygon,
         starts_at: fromLocalDatetimeInput(startsAt),
         ends_at: fromLocalDatetimeInput(endsAt),
         metadata: null,
@@ -70,14 +70,6 @@ export function EventAreaForm({ latitude, longitude, onCreated, onCancel }: Even
         />
       </div>
       <Input
-        label="Radius (meters)"
-        type="number"
-        min="10"
-        value={radius}
-        onChange={(e) => setRadius(e.target.value)}
-        required
-      />
-      <Input
         label="Starts At"
         type="datetime-local"
         value={startsAt}
@@ -91,9 +83,8 @@ export function EventAreaForm({ latitude, longitude, onCreated, onCancel }: Even
         onChange={(e) => setEndsAt(e.target.value)}
         required
       />
-      <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
-        <span>Lat: {latitude.toFixed(6)}</span>
-        <span>Lng: {longitude.toFixed(6)}</span>
+      <div className="text-xs text-gray-400">
+        Polygon: <span className="text-gray-200">{polygon.length} points</span>
       </div>
       <div className="flex gap-2 mt-1">
         <Button type="submit" loading={loading} className="flex-1">Place</Button>

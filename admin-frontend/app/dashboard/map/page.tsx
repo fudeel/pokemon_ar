@@ -8,6 +8,7 @@ import { MapToolbar } from '@/components/map/MapToolbar'
 import { PlacementModal } from '@/components/map/PlacementModal'
 import { EditSpawnAreaModal } from '@/components/map/EditSpawnAreaModal'
 import { EditItemSpawnAreaModal } from '@/components/map/EditItemSpawnAreaModal'
+import { POLYGON_AREA_TYPES } from '@/components/map/GameMap'
 import {
   deactivateWorldItem,
   deleteEventArea,
@@ -31,6 +32,7 @@ import {
 import type {
   EntityType,
   EventArea,
+  GeoLocation,
   Gym,
   Item,
   ItemSpawnArea,
@@ -47,11 +49,20 @@ const GameMap = dynamic(
   { ssr: false, loading: () => <div className="flex-1 flex items-center justify-center text-gray-400">Loading map…</div> },
 )
 
-interface PlacementTarget {
+interface PointPlacement {
+  kind: 'point'
   type: EntityType
   latitude: number
   longitude: number
 }
+
+interface PolygonPlacement {
+  kind: 'polygon'
+  type: EntityType
+  polygon: GeoLocation[]
+}
+
+type Placement = PointPlacement | PolygonPlacement
 
 export default function MapPage() {
   const [mapObjects, setMapObjects] = useState<MapObject[]>([])
@@ -66,7 +77,8 @@ export default function MapPage() {
   const [items, setItems] = useState<Item[]>([])
 
   const [activeType, setActiveType] = useState<EntityType | null>(null)
-  const [placement, setPlacement] = useState<PlacementTarget | null>(null)
+  const [drawingPolygon, setDrawingPolygon] = useState<GeoLocation[]>([])
+  const [placement, setPlacement] = useState<Placement | null>(null)
   const [editingSpawnArea, setEditingSpawnArea] = useState<SpawnArea | null>(null)
   const [editingItemSpawnArea, setEditingItemSpawnArea] = useState<ItemSpawnArea | null>(null)
 
@@ -99,13 +111,31 @@ export default function MapPage() {
     loadAll()
   }, [loadAll])
 
+  const handleSelectType = useCallback((type: EntityType | null) => {
+    setActiveType(type)
+    setDrawingPolygon([])
+  }, [])
+
   const handleMapClick = useCallback(
     (lat: number, lng: number) => {
       if (!activeType) return
-      setPlacement({ type: activeType, latitude: lat, longitude: lng })
+      setPlacement({ kind: 'point', type: activeType, latitude: lat, longitude: lng })
     },
     [activeType],
   )
+
+  const handleAddPolygonPoint = useCallback((lat: number, lng: number) => {
+    setDrawingPolygon((prev) => [...prev, { latitude: lat, longitude: lng }])
+  }, [])
+
+  const handleClearDrawing = useCallback(() => {
+    setDrawingPolygon([])
+  }, [])
+
+  const handleClosePolygon = useCallback(() => {
+    if (!activeType || drawingPolygon.length < 3) return
+    setPlacement({ kind: 'polygon', type: activeType, polygon: drawingPolygon })
+  }, [activeType, drawingPolygon])
 
   const handleEntityCreated = useCallback(
     (type: EntityType, entity: unknown) => {
@@ -120,9 +150,14 @@ export default function MapPage() {
         case 'item_spawn_area': setItemSpawnAreas((p) => [...p, entity as ItemSpawnArea]); break
       }
       setActiveType(null)
+      setDrawingPolygon([])
     },
     [],
   )
+
+  const handlePlacementClose = useCallback(() => {
+    setPlacement(null)
+  }, [])
 
   const handleSpawnAreaUpdated = useCallback((updated: SpawnArea) => {
     setSpawnAreas((prev) => prev.map((a) => (a.id === updated.id ? updated : a)))
@@ -179,18 +214,23 @@ export default function MapPage() {
     eventAreas.length + gyms.length + rarePokemon.length +
     worldItemSpawns.length + itemSpawnAreas.length
 
+  const isDrawingMode = activeType !== null && POLYGON_AREA_TYPES.has(activeType)
+
   return (
     <div className="flex flex-col h-full">
       <Header
         title="World Map"
         subtitle={`${totalEntities} entities on the map`}
       />
-      <MapToolbar activeType={activeType} onSelect={setActiveType} />
-      <div className="flex-1 flex overflow-hidden">
+      <MapToolbar activeType={activeType} onSelect={handleSelectType} />
+      <div className="flex-1 flex overflow-hidden relative">
         <GameMap
           data={{ mapObjects, npcs, spawnAreas, eventAreas, gyms, rarePokemon, worldItemSpawns, itemSpawnAreas }}
           activeType={activeType}
+          drawingPolygon={drawingPolygon}
           onMapClick={handleMapClick}
+          onAddPolygonPoint={handleAddPolygonPoint}
+          onClosePolygon={handleClosePolygon}
           onDeleteMapObject={handleDeleteMapObject}
           onDeleteNpc={handleDeleteNpc}
           onEditSpawnArea={setEditingSpawnArea}
@@ -202,16 +242,56 @@ export default function MapPage() {
           onEditItemSpawnArea={setEditingItemSpawnArea}
           onDeleteItemSpawnArea={handleDeleteItemSpawnArea}
         />
+
+        {isDrawingMode && (
+          <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-2 px-3 py-2 rounded-lg bg-surface-2/95 backdrop-blur border border-surface-3 shadow-lg text-xs">
+            <span className="text-gray-300">
+              Drawing zone — <span className="text-amber-400 font-medium">{drawingPolygon.length}</span> point{drawingPolygon.length === 1 ? '' : 's'}
+            </span>
+            <button
+              type="button"
+              onClick={handleClosePolygon}
+              disabled={drawingPolygon.length < 3}
+              className="px-2.5 py-1 rounded bg-emerald-600 text-white font-medium hover:bg-emerald-500 disabled:bg-surface-3 disabled:text-gray-500 disabled:cursor-not-allowed"
+            >
+              Close shape
+            </button>
+            <button
+              type="button"
+              onClick={handleClearDrawing}
+              disabled={drawingPolygon.length === 0}
+              className="px-2.5 py-1 rounded bg-surface-3 text-gray-200 hover:bg-gray-600 disabled:opacity-40 disabled:cursor-not-allowed inline-flex items-center gap-1"
+              title="Clear drawing"
+            >
+              <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+              Clear
+            </button>
+            <span className="text-gray-500 ml-1">Click the green start marker to close</span>
+          </div>
+        )}
       </div>
 
-      {placement && (
+      {placement && placement.kind === 'point' && (
         <PlacementModal
           type={placement.type}
           coords={{ latitude: placement.latitude, longitude: placement.longitude }}
           species={species}
           items={items}
           onCreated={handleEntityCreated}
-          onClose={() => setPlacement(null)}
+          onClose={handlePlacementClose}
+        />
+      )}
+
+      {placement && placement.kind === 'polygon' && (
+        <PlacementModal
+          type={placement.type}
+          polygon={placement.polygon}
+          species={species}
+          items={items}
+          onCreated={handleEntityCreated}
+          onClose={handlePlacementClose}
         />
       )}
 

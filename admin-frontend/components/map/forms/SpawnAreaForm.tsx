@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { createSpawnArea, setSpawnAreaPokemon } from '@/lib/api/admin'
-import type { PokemonSpecies, SpawnArea } from '@/types'
+import type { GeoLocation, PokemonSpecies, SpawnArea } from '@/types'
 
 interface SpawnEntry {
   species_id: number
@@ -15,8 +15,8 @@ interface SpawnEntry {
 }
 
 interface SpawnAreaFormProps {
-  latitude: number
-  longitude: number
+  /** New-area mode: the polygon drawn on the map. */
+  polygon?: GeoLocation[]
   species: PokemonSpecies[]
   /** When editing an existing area, pass it here — skips creating a new row */
   editing?: SpawnArea
@@ -25,15 +25,13 @@ interface SpawnAreaFormProps {
 }
 
 export function SpawnAreaForm({
-  latitude,
-  longitude,
+  polygon,
   species,
   editing,
   onSaved,
   onCancel,
 }: SpawnAreaFormProps) {
   const [name, setName] = useState(editing?.name ?? '')
-  const [radius, setRadius] = useState(String(editing?.radius_meters ?? '200'))
   const [entries, setEntries] = useState<SpawnEntry[]>(
     editing?.pokemon.map((p) => ({ species_id: p.species_id, spawn_chance: p.spawn_chance })) ?? [],
   )
@@ -65,10 +63,12 @@ export function SpawnAreaForm({
       if (editing) {
         area = await setSpawnAreaPokemon(editing.id, entries)
       } else {
+        if (!polygon || polygon.length < 3) {
+          throw new Error('Polygon needs at least 3 points')
+        }
         area = await createSpawnArea({
           name: name.trim(),
-          center: { latitude, longitude },
-          radius_meters: parseFloat(radius),
+          polygon,
           pokemon: entries,
         })
       }
@@ -95,29 +95,19 @@ export function SpawnAreaForm({
       <ErrorMessage message={error} />
 
       {!editing && (
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            label="Area Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Fire Zone"
-            required
-          />
-          <Input
-            label="Radius (m)"
-            type="number"
-            min="10"
-            value={radius}
-            onChange={(e) => setRadius(e.target.value)}
-            required
-          />
-        </div>
+        <Input
+          label="Area Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Fire Zone"
+          required
+        />
       )}
 
       {editing && (
         <div className="text-xs text-gray-400 bg-surface-3 rounded px-3 py-2">
           Editing <span className="text-gray-100 font-medium">{editing.name}</span>
-          {' '}· {editing.radius_meters}m radius
+          {' '}· {editing.polygon.length}-point zone
         </div>
       )}
 
@@ -150,7 +140,6 @@ export function SpawnAreaForm({
                 value={String(entry.species_id)}
                 onChange={(e) => updateEntry(i, 'species_id', parseInt(e.target.value))}
                 options={[
-                  // always include the currently-selected option
                   ...speciesOptions.filter(
                     (o) =>
                       o.value === String(entry.species_id) ||
@@ -185,10 +174,9 @@ export function SpawnAreaForm({
         ))}
       </div>
 
-      {!editing && (
-        <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
-          <span>Lat: {latitude.toFixed(6)}</span>
-          <span>Lng: {longitude.toFixed(6)}</span>
+      {!editing && polygon && (
+        <div className="text-xs text-gray-400">
+          Polygon: <span className="text-gray-200">{polygon.length} points</span>
         </div>
       )}
 

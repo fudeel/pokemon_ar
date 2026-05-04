@@ -195,6 +195,7 @@ def spawn_area_to_model(area: SpawnArea) -> SpawnAreaModel:
     return SpawnAreaModel(
         id=area.id,
         name=area.name,
+        polygon=[geo_to_model(p) for p in area.polygon],
         center=geo_to_model(area.center),
         radius_meters=area.radius_meters,
         pokemon=[
@@ -213,6 +214,7 @@ def event_area_to_model(area: EventArea) -> EventAreaModel:
         id=area.id,
         name=area.name,
         description=area.description,
+        polygon=[geo_to_model(p) for p in area.polygon],
         center=geo_to_model(area.center),
         radius_meters=area.radius_meters,
         starts_at=area.starts_at,
@@ -338,6 +340,7 @@ def item_spawn_area_to_model(area: ItemSpawnArea) -> ItemSpawnAreaModel:
     return ItemSpawnAreaModel(
         id=area.id,
         name=area.name,
+        polygon=[geo_to_model(p) for p in area.polygon],
         center=geo_to_model(area.center),
         radius_meters=area.radius_meters,
         items=[

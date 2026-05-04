@@ -16,8 +16,6 @@ export function EditItemSpawnAreaModal({ area, items, onSaved, onClose }: EditIt
   return (
     <Modal title={`Edit Item Spawn Area — ${area.name}`} onClose={onClose} width="md">
       <ItemSpawnAreaForm
-        latitude={area.center.latitude}
-        longitude={area.center.longitude}
         items={items}
         editing={area}
         onSaved={(updated) => {

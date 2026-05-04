@@ -7,6 +7,12 @@ import sqlite3
 from app.core.exceptions import NotFoundError
 from app.domain.world.geo_location import GeoLocation
 from app.domain.world.item_spawn_area import ItemSpawnArea, ItemSpawnAreaEntry
+from app.domain.world.polygon import (
+    bounding_radius_meters,
+    centroid,
+    hydrate_polygon,
+    serialize_polygon,
+)
 from app.repositories.base_repository import BaseRepository
 from app.repositories.item_repository import ItemRepository
 
@@ -20,17 +26,26 @@ class ItemSpawnAreaRepository(BaseRepository):
         self,
         *,
         name: str,
-        center: GeoLocation,
-        radius_meters: float,
+        polygon: tuple[GeoLocation, ...],
         created_by_admin_id: int | None,
     ) -> ItemSpawnArea:
+        center = centroid(polygon)
+        radius = bounding_radius_meters(polygon, center)
         with self.db.connection() as conn:
             cursor = conn.execute(
                 """
-                INSERT INTO item_spawn_areas (name, center_lat, center_lng, radius_meters, created_by_admin_id)
-                VALUES (?, ?, ?, ?, ?)
+                INSERT INTO item_spawn_areas
+                    (name, center_lat, center_lng, radius_meters, polygon_points, created_by_admin_id)
+                VALUES (?, ?, ?, ?, ?, ?)
                 """,
-                (name, center.latitude, center.longitude, radius_meters, created_by_admin_id),
+                (
+                    name,
+                    center.latitude,
+                    center.longitude,
+                    radius,
+                    serialize_polygon(polygon),
+                    created_by_admin_id,
+                ),
             )
         return self.get_by_id(cursor.lastrowid)
 
@@ -131,10 +146,14 @@ class ItemSpawnAreaRepository(BaseRepository):
     def _hydrate(
         self, row: sqlite3.Row, entries: list[ItemSpawnAreaEntry]
     ) -> ItemSpawnArea:
+        polygon = hydrate_polygon(
+            payload=row["polygon_points"],
+            fallback_center=GeoLocation(latitude=row["center_lat"], longitude=row["center_lng"]),
+            fallback_radius_meters=row["radius_meters"],
+        )
         return ItemSpawnArea(
             id=row["id"],
             name=row["name"],
-            center=GeoLocation(latitude=row["center_lat"], longitude=row["center_lng"]),
-            radius_meters=row["radius_meters"],
+            polygon=polygon,
             items=tuple(entries),
         )

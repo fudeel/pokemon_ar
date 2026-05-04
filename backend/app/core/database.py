@@ -38,6 +38,20 @@ class Database:
         sql = self._schema_path.read_text(encoding="utf-8")
         conn = self._get_connection()
         conn.executescript(sql)
+        self._apply_runtime_migrations(conn)
+
+    @staticmethod
+    def _apply_runtime_migrations(conn: sqlite3.Connection) -> None:
+        """Idempotent column additions for tables that pre-existed before a column was added."""
+        additions = (
+            ("spawn_areas", "polygon_points", "TEXT"),
+            ("event_areas", "polygon_points", "TEXT"),
+            ("item_spawn_areas", "polygon_points", "TEXT"),
+        )
+        for table, column, decl in additions:
+            cols = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}
+            if column not in cols:
+                conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
 
     @contextmanager
     def connection(self) -> Iterator[sqlite3.Connection]:

@@ -7,7 +7,7 @@ import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { createItemSpawnArea, setItemSpawnAreaItems } from '@/lib/api/admin'
-import type { Item, ItemSpawnArea } from '@/types'
+import type { GeoLocation, Item, ItemSpawnArea } from '@/types'
 
 interface ItemEntry {
   item_id: number
@@ -16,8 +16,8 @@ interface ItemEntry {
 }
 
 interface ItemSpawnAreaFormProps {
-  latitude: number
-  longitude: number
+  /** New-area mode: the polygon drawn on the map. */
+  polygon?: GeoLocation[]
   items: Item[]
   /** When editing an existing area, pass it here — skips creating a new row */
   editing?: ItemSpawnArea
@@ -26,15 +26,13 @@ interface ItemSpawnAreaFormProps {
 }
 
 export function ItemSpawnAreaForm({
-  latitude,
-  longitude,
+  polygon,
   items,
   editing,
   onSaved,
   onCancel,
 }: ItemSpawnAreaFormProps) {
   const [name, setName] = useState(editing?.name ?? '')
-  const [radius, setRadius] = useState(String(editing?.radius_meters ?? '300'))
   const [entries, setEntries] = useState<ItemEntry[]>(
     editing?.items.map((i) => ({
       item_id: i.item_id,
@@ -70,10 +68,12 @@ export function ItemSpawnAreaForm({
       if (editing) {
         area = await setItemSpawnAreaItems(editing.id, entries)
       } else {
+        if (!polygon || polygon.length < 3) {
+          throw new Error('Polygon needs at least 3 points')
+        }
         area = await createItemSpawnArea({
           name: name.trim(),
-          center: { latitude, longitude },
-          radius_meters: parseFloat(radius),
+          polygon,
           items: entries,
         })
       }
@@ -103,29 +103,19 @@ export function ItemSpawnAreaForm({
       <ErrorMessage message={error} />
 
       {!editing && (
-        <div className="grid grid-cols-2 gap-3">
-          <Input
-            label="Area Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="e.g. Potion Grove"
-            required
-          />
-          <Input
-            label="Radius (m)"
-            type="number"
-            min="10"
-            value={radius}
-            onChange={(e) => setRadius(e.target.value)}
-            required
-          />
-        </div>
+        <Input
+          label="Area Name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="e.g. Potion Grove"
+          required
+        />
       )}
 
       {editing && (
         <div className="text-xs text-gray-400 bg-surface-3 rounded px-3 py-2">
           Editing <span className="text-gray-100 font-medium">{editing.name}</span>
-          {' '}· {editing.radius_meters}m radius
+          {' '}· {editing.polygon.length}-point zone
         </div>
       )}
 
@@ -205,10 +195,9 @@ export function ItemSpawnAreaForm({
         ))}
       </div>
 
-      {!editing && (
-        <div className="grid grid-cols-2 gap-2 text-xs text-gray-400">
-          <span>Lat: {latitude.toFixed(6)}</span>
-          <span>Lng: {longitude.toFixed(6)}</span>
+      {!editing && polygon && (
+        <div className="text-xs text-gray-400">
+          Polygon: <span className="text-gray-200">{polygon.length} points</span>
         </div>
       )}
 

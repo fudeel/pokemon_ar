@@ -218,6 +218,7 @@ CREATE TABLE IF NOT EXISTS spawn_areas (
     center_lat REAL NOT NULL,
     center_lng REAL NOT NULL,
     radius_meters REAL NOT NULL,
+    polygon_points TEXT,
     primary_type TEXT NOT NULL,
     secondary_type TEXT,
     spawn_weight REAL NOT NULL DEFAULT 1.0,
@@ -247,6 +248,7 @@ CREATE TABLE IF NOT EXISTS event_areas (
     center_lat REAL NOT NULL,
     center_lng REAL NOT NULL,
     radius_meters REAL NOT NULL,
+    polygon_points TEXT,
     starts_at TEXT NOT NULL,
     ends_at TEXT NOT NULL,
     metadata TEXT,
@@ -306,6 +308,7 @@ CREATE TABLE IF NOT EXISTS item_spawn_areas (
     center_lat REAL NOT NULL,
     center_lng REAL NOT NULL,
     radius_meters REAL NOT NULL CHECK (radius_meters > 0),
+    polygon_points TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     created_by_admin_id INTEGER,
     FOREIGN KEY (created_by_admin_id) REFERENCES admins(id) ON DELETE SET NULL

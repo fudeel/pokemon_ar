@@ -148,8 +148,7 @@ export interface SpawnAreaPokemonEntry {
 
 export interface SpawnAreaPayload {
   name: string
-  center: { latitude: number; longitude: number }
-  radius_meters: number
+  polygon: { latitude: number; longitude: number }[]
   pokemon: SpawnAreaPokemonEntry[]
 }
 
@@ -177,8 +176,7 @@ export function listEventAreas(): Promise<EventArea[]> {
 export interface EventAreaPayload {
   name: string
   description: string | null
-  center: { latitude: number; longitude: number }
-  radius_meters: number
+  polygon: { latitude: number; longitude: number }[]
   starts_at: string
   ends_at: string
   metadata: Record<string, unknown> | null
@@ -350,8 +348,7 @@ export interface ItemSpawnAreaEntryPayload {
 
 export interface ItemSpawnAreaPayload {
   name: string
-  center: { latitude: number; longitude: number }
-  radius_meters: number
+  polygon: { latitude: number; longitude: number }[]
   items: ItemSpawnAreaEntryPayload[]
 }
 

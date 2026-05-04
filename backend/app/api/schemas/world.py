@@ -40,6 +40,7 @@ class SpawnAreaPokemonModel(BaseModel):
 class SpawnAreaModel(BaseModel):
     id: int
     name: str
+    polygon: list[GeoLocationModel]
     center: GeoLocationModel
     radius_meters: float
     pokemon: list[SpawnAreaPokemonModel]
@@ -49,6 +50,7 @@ class EventAreaModel(BaseModel):
     id: int
     name: str
     description: str | None
+    polygon: list[GeoLocationModel]
     center: GeoLocationModel
     radius_meters: float
     starts_at: datetime
@@ -103,6 +105,7 @@ class ItemSpawnAreaItemModel(BaseModel):
 class ItemSpawnAreaModel(BaseModel):
     id: int
     name: str
+    polygon: list[GeoLocationModel]
     center: GeoLocationModel
     radius_meters: float
     items: list[ItemSpawnAreaItemModel]

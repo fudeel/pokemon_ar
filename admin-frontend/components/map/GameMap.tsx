@@ -7,7 +7,8 @@ import {
   TileLayer,
   Marker,
   Popup,
-  Circle,
+  Polygon,
+  Polyline,
   useMapEvents,
 } from 'react-leaflet'
 import L from 'leaflet'
@@ -17,6 +18,7 @@ import { formatDateTime } from '@/lib/utils'
 import type {
   EntityType,
   EventArea,
+  GeoLocation,
   Gym,
   ItemSpawnArea,
   MapObject,
@@ -26,7 +28,12 @@ import type {
   WorldItemSpawn,
 } from '@/types'
 
-// Fix Leaflet default icon paths broken by webpack
+export const POLYGON_AREA_TYPES: ReadonlySet<EntityType> = new Set([
+  'spawn_area',
+  'event_area',
+  'item_spawn_area',
+])
+
 function fixLeafletIcons() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   delete (L.Icon.Default.prototype as any)._getIconUrl
@@ -55,6 +62,17 @@ function makeHiddenItemIcon() {
   })
 }
 
+function makeVertexIcon(label: string, isFirst: boolean, canClose: boolean) {
+  const bg = isFirst ? (canClose ? '#22c55e' : '#3b82f6') : '#3b82f6'
+  const ring = isFirst && canClose ? 'box-shadow:0 0 0 3px rgba(34,197,94,0.35), 0 1px 4px rgba(0,0,0,0.6);' : 'box-shadow:0 1px 4px rgba(0,0,0,0.6);'
+  return L.divIcon({
+    className: '',
+    html: `<div style="width:18px;height:18px;border-radius:50%;background:${bg};border:2px solid white;${ring}display:flex;align-items:center;justify-content:center;font-size:10px;color:white;font-weight:bold">${label}</div>`,
+    iconSize: [18, 18],
+    iconAnchor: [9, 9],
+  })
+}
+
 const ICONS: Record<EntityType, L.DivIcon> = {
   map_object: makeColoredIcon('#6b7280'),
   npc: makeColoredIcon('#8b5cf6'),
@@ -68,18 +86,27 @@ const ICONS: Record<EntityType, L.DivIcon> = {
 
 interface ClickHandlerProps {
   activeType: EntityType | null
+  isDrawingPolygon: boolean
   onMapClick: (lat: number, lng: number) => void
+  onAddPolygonPoint: (lat: number, lng: number) => void
 }
 
-function ClickHandler({ activeType, onMapClick }: ClickHandlerProps) {
+function ClickHandler({ activeType, isDrawingPolygon, onMapClick, onAddPolygonPoint }: ClickHandlerProps) {
   useMapEvents({
     click(e) {
-      if (activeType) {
+      if (!activeType) return
+      if (isDrawingPolygon) {
+        onAddPolygonPoint(e.latlng.lat, e.latlng.lng)
+      } else {
         onMapClick(e.latlng.lat, e.latlng.lng)
       }
     },
   })
   return null
+}
+
+function polygonLatLngs(polygon: GeoLocation[]): [number, number][] {
+  return polygon.map((p) => [p.latitude, p.longitude])
 }
 
 export interface GameMapData {
@@ -96,7 +123,10 @@ export interface GameMapData {
 interface GameMapProps {
   data: GameMapData
   activeType: EntityType | null
+  drawingPolygon: GeoLocation[]
   onMapClick: (lat: number, lng: number) => void
+  onAddPolygonPoint: (lat: number, lng: number) => void
+  onClosePolygon: () => void
   onDeleteMapObject: (id: number) => void
   onDeleteNpc: (id: number) => void
   onEditSpawnArea: (area: SpawnArea) => void
@@ -112,7 +142,10 @@ interface GameMapProps {
 export function GameMap({
   data,
   activeType,
+  drawingPolygon,
   onMapClick,
+  onAddPolygonPoint,
+  onClosePolygon,
   onDeleteMapObject,
   onDeleteNpc,
   onEditSpawnArea,
@@ -128,6 +161,9 @@ export function GameMap({
     fixLeafletIcons()
   }, [])
 
+  const isDrawingMode = activeType !== null && POLYGON_AREA_TYPES.has(activeType)
+  const canClose = drawingPolygon.length >= 3
+
   return (
     <MapContainer
       center={[41.9028, 12.4964]}
@@ -139,7 +175,12 @@ export function GameMap({
         url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
       />
 
-      <ClickHandler activeType={activeType} onMapClick={onMapClick} />
+      <ClickHandler
+        activeType={activeType}
+        isDrawingPolygon={isDrawingMode}
+        onMapClick={onMapClick}
+        onAddPolygonPoint={onAddPolygonPoint}
+      />
 
       {data.mapObjects.map((obj) => (
         <Marker
@@ -179,16 +220,15 @@ export function GameMap({
       ))}
 
       {data.spawnAreas.map((area) => (
-        <Circle
+        <Polygon
           key={`sa-${area.id}`}
-          center={[area.center.latitude, area.center.longitude]}
-          radius={area.radius_meters}
+          positions={polygonLatLngs(area.polygon)}
           pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.15, weight: 1.5 }}
         >
           <Popup>
             <div className="text-xs space-y-2" style={{ minWidth: 160 }}>
               <p className="font-semibold">{area.name}</p>
-              <p className="text-gray-500">{area.radius_meters}m radius</p>
+              <p className="text-gray-500">{area.polygon.length}-point zone</p>
               {area.pokemon.length === 0 ? (
                 <p className="text-gray-400 italic">No Pokémon configured</p>
               ) : (
@@ -211,14 +251,13 @@ export function GameMap({
               </div>
             </div>
           </Popup>
-        </Circle>
+        </Polygon>
       ))}
 
       {data.eventAreas.map((area) => (
-        <Circle
+        <Polygon
           key={`ea-${area.id}`}
-          center={[area.center.latitude, area.center.longitude]}
-          radius={area.radius_meters}
+          positions={polygonLatLngs(area.polygon)}
           pathOptions={{ color: '#f59e0b', fillColor: '#f59e0b', fillOpacity: 0.12, weight: 1.5, dashArray: '6 4' }}
         >
           <Popup>
@@ -231,7 +270,7 @@ export function GameMap({
               </Button>
             </div>
           </Popup>
-        </Circle>
+        </Polygon>
       ))}
 
       {data.gyms.map((gym) => (
@@ -306,16 +345,15 @@ export function GameMap({
       ))}
 
       {data.itemSpawnAreas.map((area) => (
-        <Circle
+        <Polygon
           key={`isa-${area.id}`}
-          center={[area.center.latitude, area.center.longitude]}
-          radius={area.radius_meters}
+          positions={polygonLatLngs(area.polygon)}
           pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.12, weight: 1.5, dashArray: '4 3' }}
         >
           <Popup>
             <div className="text-xs space-y-2" style={{ minWidth: 160 }}>
               <p className="font-semibold">{area.name}</p>
-              <p className="text-gray-500">{area.radius_meters}m radius</p>
+              <p className="text-gray-500">{area.polygon.length}-point zone</p>
               {area.items.length === 0 ? (
                 <p className="text-gray-400 italic">No items configured</p>
               ) : (
@@ -338,8 +376,38 @@ export function GameMap({
               </div>
             </div>
           </Popup>
-        </Circle>
+        </Polygon>
       ))}
+
+      {isDrawingMode && drawingPolygon.length >= 2 && (
+        <Polyline
+          positions={polygonLatLngs(drawingPolygon)}
+          pathOptions={{ color: '#fbbf24', weight: 2, dashArray: '4 4' }}
+        />
+      )}
+      {isDrawingMode && drawingPolygon.length >= 3 && (
+        <Polyline
+          positions={[
+            [drawingPolygon[drawingPolygon.length - 1].latitude, drawingPolygon[drawingPolygon.length - 1].longitude],
+            [drawingPolygon[0].latitude, drawingPolygon[0].longitude],
+          ]}
+          pathOptions={{ color: '#fbbf24', weight: 1, dashArray: '2 6', opacity: 0.5 }}
+        />
+      )}
+
+      {isDrawingMode &&
+        drawingPolygon.map((point, i) => {
+          const isFirst = i === 0
+          const handleClick = isFirst && canClose ? () => onClosePolygon() : undefined
+          return (
+            <Marker
+              key={`vertex-${i}`}
+              position={[point.latitude, point.longitude]}
+              icon={makeVertexIcon(String(i + 1), isFirst, canClose)}
+              eventHandlers={handleClick ? { click: handleClick } : undefined}
+            />
+          )
+        })}
     </MapContainer>
   )
 }

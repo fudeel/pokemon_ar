@@ -120,6 +120,10 @@ def _to_geo(model) -> GeoLocation:
     return GeoLocation(latitude=model.latitude, longitude=model.longitude)
 
 
+def _to_polygon(points) -> tuple[GeoLocation, ...]:
+    return tuple(_to_geo(p) for p in points)
+
+
 def _build_objective_drafts(payload: QuestUpsertRequest) -> list[ObjectiveDraft]:
     drafts: list[ObjectiveDraft] = []
     for objective in payload.objectives:
@@ -355,8 +359,7 @@ def create_spawn_area(
     area = container.admin_service.create_spawn_area(
         admin_id=admin_id,
         name=payload.name,
-        center=_to_geo(payload.center),
-        radius_meters=payload.radius_meters,
+        polygon=_to_polygon(payload.polygon),
     )
     if payload.pokemon:
         area = container.admin_service.set_spawn_area_pokemon(
@@ -399,8 +402,7 @@ def create_event_area(
         admin_id=admin_id,
         name=payload.name,
         description=payload.description,
-        center=_to_geo(payload.center),
-        radius_meters=payload.radius_meters,
+        polygon=_to_polygon(payload.polygon),
         starts_at=payload.starts_at,
         ends_at=payload.ends_at,
         metadata=payload.metadata,
@@ -614,8 +616,7 @@ def create_item_spawn_area(
     area = container.admin_service.create_item_spawn_area(
         admin_id=admin_id,
         name=payload.name,
-        center=_to_geo(payload.center),
-        radius_meters=payload.radius_meters,
+        polygon=_to_polygon(payload.polygon),
         entries=entries,
     )
     return item_spawn_area_to_model(area)

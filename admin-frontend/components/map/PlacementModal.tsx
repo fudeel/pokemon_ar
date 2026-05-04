@@ -13,6 +13,7 @@ import { ItemSpawnAreaForm } from './forms/ItemSpawnAreaForm'
 import type {
   EntityType,
   EventArea,
+  GeoLocation,
   Gym,
   Item,
   ItemSpawnArea,
@@ -31,7 +32,10 @@ interface PlacementCoords {
 
 interface PlacementModalProps {
   type: EntityType
-  coords: PlacementCoords
+  /** For point-style placements (NPC, gym, etc). */
+  coords?: PlacementCoords
+  /** For polygon area placements (spawn_area, event_area, item_spawn_area). */
+  polygon?: GeoLocation[]
   species: PokemonSpecies[]
   items: Item[]
   onCreated: (type: EntityType, entity: unknown) => void
@@ -54,17 +58,20 @@ const MODAL_WIDTHS: Partial<Record<EntityType, 'sm' | 'md' | 'lg'>> = {
   item_spawn_area: 'md',
 }
 
-export function PlacementModal({ type, coords, species, items, onCreated, onClose }: PlacementModalProps) {
-  const { latitude, longitude } = coords
-
+export function PlacementModal({ type, coords, polygon, species, items, onCreated, onClose }: PlacementModalProps) {
   const handleCreated = (entity: unknown) => {
     onCreated(type, entity)
     onClose()
   }
 
+  // For point placements, derive lat/lng. Falls back to a no-op so TS is happy
+  // for the types where coords aren't expected.
+  const latitude = coords?.latitude ?? 0
+  const longitude = coords?.longitude ?? 0
+
   return (
     <Modal title={TITLES[type]} onClose={onClose} width={MODAL_WIDTHS[type] ?? 'sm'}>
-      {type === 'map_object' && (
+      {type === 'map_object' && coords && (
         <MapObjectForm
           latitude={latitude}
           longitude={longitude}
@@ -72,7 +79,7 @@ export function PlacementModal({ type, coords, species, items, onCreated, onClos
           onCancel={onClose}
         />
       )}
-      {type === 'npc' && (
+      {type === 'npc' && coords && (
         <NpcForm
           latitude={latitude}
           longitude={longitude}
@@ -80,24 +87,22 @@ export function PlacementModal({ type, coords, species, items, onCreated, onClos
           onCancel={onClose}
         />
       )}
-      {type === 'spawn_area' && (
+      {type === 'spawn_area' && polygon && (
         <SpawnAreaForm
-          latitude={latitude}
-          longitude={longitude}
+          polygon={polygon}
           species={species}
           onSaved={(area: SpawnArea) => handleCreated(area)}
           onCancel={onClose}
         />
       )}
-      {type === 'event_area' && (
+      {type === 'event_area' && polygon && (
         <EventAreaForm
-          latitude={latitude}
-          longitude={longitude}
+          polygon={polygon}
           onCreated={(area: EventArea) => handleCreated(area)}
           onCancel={onClose}
         />
       )}
-      {type === 'gym' && (
+      {type === 'gym' && coords && (
         <GymForm
           latitude={latitude}
           longitude={longitude}
@@ -105,7 +110,7 @@ export function PlacementModal({ type, coords, species, items, onCreated, onClos
           onCancel={onClose}
         />
       )}
-      {type === 'rare_pokemon' && (
+      {type === 'rare_pokemon' && coords && (
         <RarePokemonForm
           latitude={latitude}
           longitude={longitude}
@@ -114,7 +119,7 @@ export function PlacementModal({ type, coords, species, items, onCreated, onClos
           onCancel={onClose}
         />
       )}
-      {type === 'world_item' && (
+      {type === 'world_item' && coords && (
         <WorldItemForm
           latitude={latitude}
           longitude={longitude}
@@ -123,10 +128,9 @@ export function PlacementModal({ type, coords, species, items, onCreated, onClos
           onCancel={onClose}
         />
       )}
-      {type === 'item_spawn_area' && (
+      {type === 'item_spawn_area' && polygon && (
         <ItemSpawnAreaForm
-          latitude={latitude}
-          longitude={longitude}
+          polygon={polygon}
           items={items}
           onSaved={(area: ItemSpawnArea) => handleCreated(area)}
           onCancel={onClose}

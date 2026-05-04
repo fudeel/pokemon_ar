@@ -67,8 +67,7 @@ class SpawnAreaPokemonEntry(BaseModel):
 
 class SpawnAreaCreateRequest(BaseModel):
     name: str
-    center: GeoLocationModel
-    radius_meters: float = Field(gt=0)
+    polygon: list[GeoLocationModel] = Field(min_length=3)
     pokemon: list[SpawnAreaPokemonEntry] = []
 
 
@@ -79,8 +78,7 @@ class SpawnAreaSetPokemonRequest(BaseModel):
 class EventAreaCreateRequest(BaseModel):
     name: str
     description: str | None = None
-    center: GeoLocationModel
-    radius_meters: float = Field(gt=0)
+    polygon: list[GeoLocationModel] = Field(min_length=3)
     starts_at: datetime
     ends_at: datetime
     metadata: dict | None = None
@@ -114,8 +112,7 @@ class ItemSpawnAreaEntryRequest(BaseModel):
 
 class ItemSpawnAreaCreateRequest(BaseModel):
     name: str = Field(min_length=1)
-    center: GeoLocationModel
-    radius_meters: float = Field(gt=0)
+    polygon: list[GeoLocationModel] = Field(min_length=3)
     items: list[ItemSpawnAreaEntryRequest] = []
 
 

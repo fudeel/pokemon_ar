@@ -126,7 +126,9 @@ export function MapToolbar({ activeType, onSelect }: MapToolbarProps) {
       })}
       {activeType && (
         <span className="ml-auto text-xs text-amber-400 animate-pulse">
-          Click on the map to place
+          {activeType === 'spawn_area' || activeType === 'event_area' || activeType === 'item_spawn_area'
+            ? 'Click on the map to add polygon points'
+            : 'Click on the map to place'}
         </span>
       )}
     </div>

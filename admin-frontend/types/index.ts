@@ -52,6 +52,7 @@ export interface SpawnAreaPokemon {
 export interface SpawnArea {
   id: number
   name: string
+  polygon: GeoLocation[]
   center: GeoLocation
   radius_meters: number
   pokemon: SpawnAreaPokemon[]
@@ -61,6 +62,7 @@ export interface EventArea {
   id: number
   name: string
   description: string | null
+  polygon: GeoLocation[]
   center: GeoLocation
   radius_meters: number
   starts_at: string
@@ -248,6 +250,7 @@ export interface ItemSpawnAreaItem {
 export interface ItemSpawnArea {
   id: number
   name: string
+  polygon: GeoLocation[]
   center: GeoLocation
   radius_meters: number
   items: ItemSpawnAreaItem[]
