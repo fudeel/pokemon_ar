@@ -2,10 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="Load game and polygons">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/api/app_factory.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/app_factory.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pokemon.db" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pokemon.db-shm" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/pokemon.db-wal" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/../game-development-frontend/components/game/GameScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/components/game/GameScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pokemon.db-shm" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-shm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pokemon.db-wal" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-wal" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -105,7 +107,7 @@
       <workItem from="1777913690731" duration="1026000" />
       <workItem from="1777915351174" duration="1652000" />
       <workItem from="1777982164999" duration="1453000" />
-      <workItem from="1777985796554" duration="2862000" />
+      <workItem from="1777985796554" duration="5895000" />
     </task>
     <task id="LOCAL-00001" summary="pokemon backend">
       <option name="closed" value="true" />
