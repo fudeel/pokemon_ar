@@ -36,8 +36,11 @@ export default function StarterSelection({ onStarterChosen }: StarterSelectionPr
     setIsConfirming(true)
     setError(null)
     try {
-      await playerApi.chooseStarter(selectedId)
-      updateSession({ has_chosen_starter: true })
+      const chosenStarter = await playerApi.chooseStarter(selectedId)
+      updateSession({
+        has_chosen_starter: true,
+        chosen_starter: chosenStarter,
+      })
       await refreshProfile()
       onStarterChosen()
     } catch (e) {

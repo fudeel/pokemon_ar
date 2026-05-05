@@ -7,7 +7,6 @@ import dynamic from 'next/dynamic'
 
 import { usePlayer } from '@/context/PlayerContext'
 import { useWorld } from '@/context/WorldContext'
-import { usePlayerLocation } from '@/hooks/usePlayerLocation'
 import { playerApi } from '@/lib/api/player'
 
 import GameHud from './GameHud'
@@ -15,7 +14,7 @@ import BattleEncounterScreen from './BattleEncounterScreen'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import ErrorMessage from '@/components/ui/ErrorMessage'
 
-import type { ActiveEncounter, WorldItemSpawn } from '@/types'
+import type { ActiveEncounter, PlayerPosition, WorldItemSpawn } from '@/types'
 
 const GameMap = dynamic(() => import('./GameMap'), {
   ssr: false,
@@ -24,7 +23,15 @@ const GameMap = dynamic(() => import('./GameMap'), {
 
 const WORLD_REFRESH_INTERVAL_MS = 45_000
 
-export default function GameScreen() {
+interface GameScreenProps {
+  position: PlayerPosition
+  gpsUnavailable: boolean
+}
+
+export default function GameScreen({
+  position,
+  gpsUnavailable,
+}: GameScreenProps) {
   const { profile, refreshProfile } = usePlayer()
   const {
     snapshot,
@@ -36,7 +43,6 @@ export default function GameScreen() {
     removePokemon,
     removeWorldItem,
   } = useWorld()
-  const { position, gpsUnavailable } = usePlayerLocation()
 
   const [activeEncounter, setActiveEncounter] = useState<ActiveEncounter | null>(null)
   const [pickupError, setPickupError] = useState<string | null>(null)
@@ -85,8 +91,6 @@ export default function GameScreen() {
     },
     [position, removeWorldItem, refreshProfile],
   )
-
-  if (!position) return <LoadingScreen message="Acquiring position…" />
 
   return (
     <div className="relative w-full h-full">

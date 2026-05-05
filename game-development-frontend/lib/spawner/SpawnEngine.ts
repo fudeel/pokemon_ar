@@ -1,7 +1,16 @@
 // game-development-frontend/lib/spawner/SpawnEngine.ts
 
-import type { SpawnArea, SpawnAreaPokemon, SpawnedPokemon } from '@/types'
-import { polygonAreaMeters2, randomPointInPolygon } from './GeoUtils'
+import type {
+  GeoLocation,
+  SpawnArea,
+  SpawnAreaPokemon,
+  SpawnedPokemon,
+} from '@/types'
+import {
+  pointInPolygon,
+  polygonAreaMeters2,
+  randomPointInPolygon,
+} from './GeoUtils'
 
 const MIN_SPAWNS_PER_AREA = 3
 const MAX_SPAWNS_PER_AREA = 12
@@ -56,8 +65,10 @@ function spawnFromArea(area: SpawnArea): SpawnedPokemon[] {
 export function generateSpawns(
   areas: SpawnArea[],
   alreadySpawnedAreaIds: Set<number>,
+  playerLocation: GeoLocation,
 ): SpawnedPokemon[] {
   return areas
     .filter((a) => !alreadySpawnedAreaIds.has(a.id))
+    .filter((a) => pointInPolygon(playerLocation, a.polygon))
     .flatMap(spawnFromArea)
 }

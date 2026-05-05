@@ -113,8 +113,11 @@ export default function StarterMapSelection({
       setConfirmingSpeciesId(speciesId)
       setError(null)
       try {
-        await playerApi.chooseStarter(speciesId)
-        updateSession({ has_chosen_starter: true })
+        const chosenStarter = await playerApi.chooseStarter(speciesId)
+        updateSession({
+          has_chosen_starter: true,
+          chosen_starter: chosenStarter,
+        })
         await refreshProfile()
         clearPlacement(session.player_id)
         onStarterChosen()

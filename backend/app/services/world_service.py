@@ -83,7 +83,7 @@ class WorldService:
 
         map_objects = self._map_objects.list_in_bounding_box(bbox.min_lat, bbox.max_lat, bbox.min_lng, bbox.max_lng)
         npcs = self._npcs.list_in_bounding_box(bbox.min_lat, bbox.max_lat, bbox.min_lng, bbox.max_lng)
-        spawn_areas = self._spawn_areas.list_in_bounding_box(bbox.min_lat, bbox.max_lat, bbox.min_lng, bbox.max_lng)
+        spawn_areas = self._spawn_areas.list_all()
         event_areas = self._event_areas.list_active_in_bounding_box(
             instant=now, min_lat=bbox.min_lat, max_lat=bbox.max_lat, min_lng=bbox.min_lng, max_lng=bbox.max_lng
         )
@@ -94,9 +94,7 @@ class WorldService:
         world_items = self._world_item_spawns.list_active_in_bounding_box(
             instant=now, min_lat=bbox.min_lat, max_lat=bbox.max_lat, min_lng=bbox.min_lng, max_lng=bbox.max_lng
         )
-        item_spawn_areas = self._item_spawn_areas.list_in_bounding_box(
-            min_lat=bbox.min_lat, max_lat=bbox.max_lat, min_lng=bbox.min_lng, max_lng=bbox.max_lng
-        )
+        item_spawn_areas = self._item_spawn_areas.list_all()
 
         map_objects = [m for m in map_objects if center.is_within_meters(m.location, radius)]
         npcs = [n for n in npcs if n.location and center.is_within_meters(n.location, radius)]

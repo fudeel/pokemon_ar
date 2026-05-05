@@ -61,6 +61,8 @@ export function pointInPolygon(
   point: GeoLocation,
   polygon: GeoLocation[],
 ): boolean {
+  if (polygon.length < 3) return false
+
   let inside = false
   const x = point.longitude
   const y = point.latitude
@@ -69,6 +71,14 @@ export function pointInPolygon(
     const yi = polygon[i].latitude
     const xj = polygon[j].longitude
     const yj = polygon[j].latitude
+    const isOnEdge =
+      Math.abs((x - xi) * (yj - yi) - (y - yi) * (xj - xi)) < 1e-12 &&
+      x >= Math.min(xi, xj) - 1e-12 &&
+      x <= Math.max(xi, xj) + 1e-12 &&
+      y >= Math.min(yi, yj) - 1e-12 &&
+      y <= Math.max(yi, yj) + 1e-12
+    if (isOnEdge) return true
+
     const intersect =
       yi > y !== yj > y &&
       x < ((xj - xi) * (y - yi)) / (yj - yi + 1e-18) + xi
@@ -115,12 +125,12 @@ export function polygonCentroid(polygon: GeoLocation[]): GeoLocation {
 }
 
 /**
- * Uniformly samples a random point inside a polygon using rejection sampling
- * over the bounding box. Falls back to the centroid after `maxAttempts`.
+ * Samples a random point inside a polygon using rejection sampling over the
+ * bounding box, with inside-or-boundary fallbacks after `maxAttempts`.
  */
 export function randomPointInPolygon(
   polygon: GeoLocation[],
-  maxAttempts = 32,
+  maxAttempts = 256,
 ): GeoLocation {
   const bbox = polygonBoundingBox(polygon)
   for (let i = 0; i < maxAttempts; i += 1) {
@@ -130,7 +140,11 @@ export function randomPointInPolygon(
     }
     if (pointInPolygon(candidate, polygon)) return candidate
   }
-  return polygonCentroid(polygon)
+
+  const centroid = polygonCentroid(polygon)
+  if (pointInPolygon(centroid, polygon)) return centroid
+
+  return polygon[0]
 }
 
 /** Approximate planar area of a polygon converted to square metres. */

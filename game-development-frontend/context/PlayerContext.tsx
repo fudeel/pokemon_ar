@@ -12,6 +12,11 @@ import {
 } from 'react'
 import { ApiError, apiClient } from '@/lib/api/client'
 import { authApi } from '@/lib/api/auth'
+import {
+  loadActivePlayerSession,
+  loadPlayerSession,
+  persistPlayerSession,
+} from '@/lib/playerSessionStorage'
 import type { PlayerProfile, PlayerSession } from '@/types'
 
 interface PlayerContextValue {
@@ -26,28 +31,10 @@ interface PlayerContextValue {
 
 const PlayerContext = createContext<PlayerContextValue | null>(null)
 
-function sessionKey(username: string) {
-  return `pokemon_player_${username.toLowerCase()}`
-}
-
-function loadStoredSession(username: string): PlayerSession | null {
-  try {
-    const raw = localStorage.getItem(sessionKey(username))
-    return raw ? (JSON.parse(raw) as PlayerSession) : null
-  } catch {
-    return null
-  }
-}
-
-function persistSession(session: PlayerSession): void {
-  localStorage.setItem(sessionKey(session.username), JSON.stringify(session))
-  localStorage.setItem('pokemon_active_session', JSON.stringify(session))
-}
-
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<PlayerSession | null>(null)
   const [profile, setProfile] = useState<PlayerProfile | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const refreshProfile = useCallback(async () => {
@@ -63,9 +50,50 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setSession((prev) => {
       if (!prev) return prev
       const updated = { ...prev, ...patch }
-      persistSession(updated)
+      persistPlayerSession(updated)
       return updated
     })
+  }, [])
+
+  useEffect(() => {
+    let cancelled = false
+    const stored = loadActivePlayerSession()
+    if (!stored) {
+      setIsLoading(false)
+      return () => {
+        cancelled = true
+      }
+    }
+    const sessionToRestore = stored
+
+    async function restoreSession() {
+      try {
+        const res = await authApi.login(
+          sessionToRestore.username,
+          sessionToRestore.password,
+        )
+        const refreshed: PlayerSession = {
+          ...sessionToRestore,
+          token: res.token,
+          expires_at: res.expires_at,
+          has_chosen_starter: res.has_chosen_starter,
+          chosen_starter: res.has_chosen_starter
+            ? sessionToRestore.chosen_starter ?? null
+            : null,
+        }
+        persistPlayerSession(refreshed)
+        if (!cancelled) setSession(refreshed)
+      } catch {
+        if (!cancelled) setSession(sessionToRestore)
+      } finally {
+        if (!cancelled) setIsLoading(false)
+      }
+    }
+
+    restoreSession()
+    return () => {
+      cancelled = true
+    }
   }, [])
 
   const login = useCallback(async (username: string) => {
@@ -73,7 +101,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
     setError(null)
 
     try {
-      const stored = loadStoredSession(username)
+      const stored = loadPlayerSession(username)
 
       if (stored) {
         // Re-authenticate with stored credentials to get a fresh token
@@ -84,8 +112,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
             token: res.token,
             expires_at: res.expires_at,
             has_chosen_starter: res.has_chosen_starter,
+            chosen_starter: stored.chosen_starter ?? null,
           }
-          persistSession(refreshed)
+          persistPlayerSession(refreshed)
           setSession(refreshed)
           return
         } catch (e) {
@@ -117,8 +146,9 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         expires_at: res.expires_at,
         player_id: res.player_id,
         has_chosen_starter: res.has_chosen_starter,
+        chosen_starter: null,
       }
-      persistSession(newSession)
+      persistPlayerSession(newSession)
       setSession(newSession)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Login failed. Try again.')

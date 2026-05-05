@@ -5,7 +5,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { usePlayer } from '@/context/PlayerContext'
-import GameScreen from '@/components/game/GameScreen'
+import GameWorldLoader from '@/components/game/GameWorldLoader'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 
 export default function GamePage() {
@@ -23,5 +23,5 @@ export default function GamePage() {
 
   if (isLoading || !session) return <LoadingScreen message="Loading world…" />
 
-  return <GameScreen />
+  return <GameWorldLoader />
 }

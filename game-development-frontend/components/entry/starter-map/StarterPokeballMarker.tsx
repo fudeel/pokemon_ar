@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, type MouseEvent } from 'react'
 import { Marker, Popup } from 'react-leaflet'
 import L from 'leaflet'
 import type { PokemonSpecies } from '@/types'
@@ -26,6 +26,11 @@ export default function StarterPokeballMarker({
   onChoose,
 }: StarterPokeballMarkerProps) {
   const color = TYPE_COLORS[species.primary_type] ?? '#facc15'
+  const handleChoose = (event: MouseEvent<HTMLButtonElement>) => {
+    event.preventDefault()
+    event.stopPropagation()
+    onChoose()
+  }
 
   const icon = useMemo(
     () =>
@@ -77,7 +82,8 @@ export default function StarterPokeballMarker({
           </p>
           {isInPickRange ? (
             <button
-              onClick={onChoose}
+              type="button"
+              onClick={handleChoose}
               disabled={isConfirming}
               className="bg-yellow-400 hover:bg-yellow-300 disabled:bg-slate-300 text-slate-900 font-bold px-4 py-1.5 rounded-lg text-sm w-full"
             >

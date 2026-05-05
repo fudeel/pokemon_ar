@@ -64,8 +64,12 @@ export function WorldProvider({ children }: { children: ReactNode }) {
       const data = await worldApi.snapshot(location)
       setSnapshot(data)
 
-      const newSpawns = generateSpawns(data.spawn_areas, spawnedAreaIdsRef.current)
-      data.spawn_areas.forEach((a) => spawnedAreaIdsRef.current.add(a.id))
+      const newSpawns = generateSpawns(
+        data.spawn_areas,
+        spawnedAreaIdsRef.current,
+        location,
+      )
+      newSpawns.forEach((spawn) => spawnedAreaIdsRef.current.add(spawn.spawnAreaId))
       setSpawnedPokemon((prev) => [...prev, ...newSpawns])
 
       lastFetchLocationRef.current = location

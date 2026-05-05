@@ -196,6 +196,7 @@ export interface PlayerSession {
   expires_at: string
   player_id: number
   has_chosen_starter: boolean
+  chosen_starter: PokemonInstance | null
 }
 
 /** Client-side position (GPS or WASD-simulated) */

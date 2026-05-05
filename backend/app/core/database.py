@@ -52,6 +52,44 @@ class Database:
             cols = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}
             if column not in cols:
                 conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} {decl}")
+        Database._ensure_starter_learnable_moves(conn)
+
+    @staticmethod
+    def _ensure_starter_learnable_moves(conn: sqlite3.Connection) -> None:
+        """
+        Existing production databases may have starter species without any
+        learnable move rows, which prevents binding a starter to a player.
+        """
+        starter_rows = conn.execute(
+            "SELECT id FROM pokemon_species WHERE is_starter = 1 ORDER BY id"
+        ).fetchall()
+        if not starter_rows:
+            return
+
+        move_row = conn.execute(
+            "SELECT id FROM moves WHERE name = ?",
+            ("Tackle",),
+        ).fetchone()
+        if move_row is None:
+            cursor = conn.execute(
+                """
+                INSERT INTO moves (name, type, category, power, accuracy, pp)
+                VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                ("Tackle", "normal", "physical", 15, 100, 20),
+            )
+            move_id = cursor.lastrowid
+        else:
+            move_id = move_row["id"]
+
+        conn.executemany(
+            """
+            INSERT INTO species_learnable_moves (species_id, move_id, learn_level)
+            VALUES (?, ?, ?)
+            ON CONFLICT(species_id, move_id) DO NOTHING
+            """,
+            [(row["id"], move_id, 1) for row in starter_rows],
+        )
 
     @contextmanager
     def connection(self) -> Iterator[sqlite3.Connection]:

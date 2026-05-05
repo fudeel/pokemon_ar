@@ -1,7 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="pokemon backend" />
+    <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="pokemon backend">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/core/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/core/database.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/services/world_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/world_service.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pokemon.db-shm" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-shm" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pokemon.db-wal" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-wal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/app/game/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/app/game/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/components/entry/StarterSelection.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/components/entry/StarterSelection.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/components/entry/starter-map/StarterMapSelection.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/components/entry/starter-map/StarterMapSelection.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/components/entry/starter-map/StarterPokeballMarker.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/components/entry/starter-map/StarterPokeballMarker.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/components/game/GameScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/components/game/GameScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/context/PlayerContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/context/PlayerContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/context/WorldContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/context/WorldContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/lib/spawner/GeoUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/lib/spawner/GeoUtils.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/lib/spawner/SpawnEngine.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/lib/spawner/SpawnEngine.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/types/index.ts" afterDir="false" />
+    </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -100,6 +116,7 @@
       <workItem from="1777913690731" duration="1026000" />
       <workItem from="1777915351174" duration="1652000" />
       <workItem from="1777982164999" duration="1453000" />
+      <workItem from="1777985796554" duration="2111000" />
     </task>
     <task id="LOCAL-00001" summary="pokemon backend">
       <option name="closed" value="true" />
