@@ -40,7 +40,6 @@ export default function GameScreen({
     error,
     fetchSnapshot,
     revealPokemon,
-    removePokemon,
     removeWorldItem,
   } = useWorld()
 
@@ -64,15 +63,6 @@ export default function GameScreen({
     return () => clearInterval(interval)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [position?.latitude, position?.longitude])
-
-  const handleCaptureSuccess = useCallback(
-    (clientId?: string) => {
-      if (clientId) removePokemon(clientId)
-      setActiveEncounter(null)
-      refreshProfile()
-    },
-    [removePokemon, refreshProfile],
-  )
 
   const handlePickupItem = useCallback(
     async (item: WorldItemSpawn) => {
@@ -124,7 +114,6 @@ export default function GameScreen({
           encounter={activeEncounter}
           profile={profile}
           onClose={() => setActiveEncounter(null)}
-          onCaptureSuccess={handleCaptureSuccess}
         />
       )}
     </div>

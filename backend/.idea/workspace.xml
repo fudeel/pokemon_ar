@@ -1,22 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="pokemon backend">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/core/database.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/core/database.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/services/world_service.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/services/world_service.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pokemon.db-shm" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-shm" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pokemon.db-wal" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-wal" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../game-development-frontend/app/game/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/app/game/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../game-development-frontend/components/entry/StarterSelection.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/components/entry/StarterSelection.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../game-development-frontend/components/entry/starter-map/StarterMapSelection.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/components/entry/starter-map/StarterMapSelection.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../game-development-frontend/components/entry/starter-map/StarterPokeballMarker.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/components/entry/starter-map/StarterPokeballMarker.tsx" afterDir="false" />
+    <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="Load game and polygons">
+      <change beforePath="$PROJECT_DIR$/pokemon.db" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pokemon.db-shm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/pokemon.db-wal" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/../game-development-frontend/components/game/GameScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/components/game/GameScreen.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../game-development-frontend/context/PlayerContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/context/PlayerContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../game-development-frontend/context/WorldContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/context/WorldContext.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../game-development-frontend/lib/spawner/GeoUtils.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/lib/spawner/GeoUtils.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../game-development-frontend/lib/spawner/SpawnEngine.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/lib/spawner/SpawnEngine.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/../game-development-frontend/types/index.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/types/index.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -116,7 +105,7 @@
       <workItem from="1777913690731" duration="1026000" />
       <workItem from="1777915351174" duration="1652000" />
       <workItem from="1777982164999" duration="1453000" />
-      <workItem from="1777985796554" duration="2111000" />
+      <workItem from="1777985796554" duration="2862000" />
     </task>
     <task id="LOCAL-00001" summary="pokemon backend">
       <option name="closed" value="true" />
@@ -126,7 +115,23 @@
       <option name="project" value="LOCAL" />
       <updated>1777806149427</updated>
     </task>
-    <option name="localTasksCounter" value="2" />
+    <task id="LOCAL-00002" summary="Load game and polygons">
+      <option name="closed" value="true" />
+      <created>1777989311673</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1777989311673</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Load game and polygons">
+      <option name="closed" value="true" />
+      <created>1777989314617</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1777989314617</updated>
+    </task>
+    <option name="localTasksCounter" value="4" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -134,7 +139,8 @@
   </component>
   <component name="VcsManagerConfiguration">
     <MESSAGE value="pokemon backend" />
-    <option name="LAST_COMMIT_MESSAGE" value="pokemon backend" />
+    <MESSAGE value="Load game and polygons" />
+    <option name="LAST_COMMIT_MESSAGE" value="Load game and polygons" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/pokemon_backend$main.coverage" NAME="main Coverage Results" MODIFIED="1777550550527" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />
