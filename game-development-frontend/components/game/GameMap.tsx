@@ -2,7 +2,7 @@
 
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useLayoutEffect } from 'react'
 import { MapContainer, TileLayer, useMap } from 'react-leaflet'
 import 'leaflet/dist/leaflet.css'
 
@@ -44,6 +44,17 @@ function MapFollower({ position }: { position: PlayerPosition }) {
   useEffect(() => {
     map.panTo([position.latitude, position.longitude], { animate: true, duration: 0.5 })
   }, [map, position.latitude, position.longitude])
+  return null
+}
+
+function CreatePokemonPane() {
+  const map = useMap()
+  useLayoutEffect(() => {
+    if (!map.getPane('pokemonPane')) {
+      const pane = map.createPane('pokemonPane')
+      pane.style.zIndex = '620'
+    }
+  }, [map])
   return null
 }
 
@@ -133,6 +144,10 @@ export default function GameMap({
           }
         />
       ))}
+
+      {/* Creates pokemonPane synchronously (useLayoutEffect runs before any
+          child useEffect, guaranteeing the pane exists when markers mount) */}
+      <CreatePokemonPane />
 
       {/* Client-spawned common pokemon */}
       {spawnedPokemon.map((poke) => {

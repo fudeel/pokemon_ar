@@ -40,6 +40,7 @@ export default function GameScreen({
     error,
     fetchSnapshot,
     revealPokemon,
+    despawnByDistance,
     removeWorldItem,
   } = useWorld()
 
@@ -53,11 +54,13 @@ export default function GameScreen({
     const now = Date.now()
     if (now - lastFetchedRef.current < 5_000) return
 
-    fetchSnapshot({ latitude: position.latitude, longitude: position.longitude })
+    const loc = { latitude: position.latitude, longitude: position.longitude }
+    fetchSnapshot(loc)
+    despawnByDistance(loc)
     lastFetchedRef.current = now
 
     const interval = setInterval(() => {
-      fetchSnapshot({ latitude: position.latitude, longitude: position.longitude })
+      fetchSnapshot(loc)
     }, WORLD_REFRESH_INTERVAL_MS)
 
     return () => clearInterval(interval)

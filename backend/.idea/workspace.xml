@@ -1,13 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="Load game and polygons">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
+    <list default="true" id="49adf06d-f54d-4c3e-aaea-c66db555f3c5" name="Changes" comment="added cors">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/api/app_factory.py" beforeDir="false" afterPath="$PROJECT_DIR$/app/api/app_factory.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pokemon.db" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pokemon.db-shm" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-shm" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pokemon.db-wal" beforeDir="false" afterPath="$PROJECT_DIR$/pokemon.db-wal" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/components/game/GameScreen.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/components/game/GameScreen.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/context/WorldContext.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/context/WorldContext.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/../game-development-frontend/lib/spawner/SpawnEngine.ts" beforeDir="false" afterPath="$PROJECT_DIR$/../game-development-frontend/lib/spawner/SpawnEngine.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,7 +108,8 @@
       <workItem from="1777913690731" duration="1026000" />
       <workItem from="1777915351174" duration="1652000" />
       <workItem from="1777982164999" duration="1453000" />
-      <workItem from="1777985796554" duration="5895000" />
+      <workItem from="1777985796554" duration="6044000" />
+      <workItem from="1778004303685" duration="3950000" />
     </task>
     <task id="LOCAL-00001" summary="pokemon backend">
       <option name="closed" value="true" />
@@ -133,7 +135,15 @@
       <option name="project" value="LOCAL" />
       <updated>1777989314617</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="added cors">
+      <option name="closed" value="true" />
+      <created>1777996378217</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1777996378217</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -142,7 +152,8 @@
   <component name="VcsManagerConfiguration">
     <MESSAGE value="pokemon backend" />
     <MESSAGE value="Load game and polygons" />
-    <option name="LAST_COMMIT_MESSAGE" value="Load game and polygons" />
+    <MESSAGE value="added cors" />
+    <option name="LAST_COMMIT_MESSAGE" value="added cors" />
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
     <SUITE FILE_PATH="coverage/pokemon_backend$main.coverage" NAME="main Coverage Results" MODIFIED="1777550550527" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$" />

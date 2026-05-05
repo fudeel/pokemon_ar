@@ -16,6 +16,7 @@ export default function SpawnAreaPolygon({ area }: SpawnAreaPolygonProps) {
   return (
     <Polygon
       positions={toLatLngTuples(area.polygon)}
+      interactive={false}
       pathOptions={{
         color: '#22d3ee',
         fillColor: '#22d3ee',

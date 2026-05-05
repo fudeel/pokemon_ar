@@ -69,12 +69,12 @@ export default function SpawnedPokemonMarker({
     })
   }, [pokemon.isRevealed, pokemon.speciesName, pokemon.level, isInRevealRange, isInCaptureRange])
 
-  if (!isInRevealRange && !pokemon.isRevealed) return null
+  if (!isInRevealRange) return null
 
   const latlng: [number, number] = [pokemon.location.latitude, pokemon.location.longitude]
 
   return (
-    <Marker position={latlng} icon={icon}>
+    <Marker position={latlng} icon={icon} zIndexOffset={200} pane="pokemonPane">
       <Popup>
         {!pokemon.isRevealed ? (
           <div className="text-center p-1">
