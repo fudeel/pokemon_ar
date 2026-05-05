@@ -1,7 +1,7 @@
 // game-development-frontend/lib/spawner/SpawnEngine.ts
 
 import type { SpawnArea, SpawnAreaPokemon, SpawnedPokemon } from '@/types'
-import { randomPointInCircle } from './GeoUtils'
+import { polygonAreaMeters2, randomPointInPolygon } from './GeoUtils'
 
 const MIN_SPAWNS_PER_AREA = 3
 const MAX_SPAWNS_PER_AREA = 12
@@ -23,11 +23,12 @@ function rollLevel(): number {
   return Math.floor(Math.random() * 12) + 2 // 2–13
 }
 
-/** Spawns client-side pokemon for a single spawn area. */
+/** Spawns client-side pokemon for a single (polygonal) spawn area. */
 function spawnFromArea(area: SpawnArea): SpawnedPokemon[] {
   if (area.pokemon.length === 0) return []
+  if (area.polygon.length < 3) return []
 
-  const areaM2 = Math.PI * area.radius_meters ** 2
+  const areaM2 = polygonAreaMeters2(area.polygon)
   const count = Math.min(
     MAX_SPAWNS_PER_AREA,
     Math.max(MIN_SPAWNS_PER_AREA, Math.floor(areaM2 / AREA_DENSITY_DIVISOR)),
@@ -35,7 +36,7 @@ function spawnFromArea(area: SpawnArea): SpawnedPokemon[] {
 
   return Array.from({ length: count }, () => {
     const species = weightedRandom(area.pokemon)
-    const location = randomPointInCircle(area.center, area.radius_meters)
+    const location = randomPointInPolygon(area.polygon)
     return {
       clientId: crypto.randomUUID(),
       speciesId: species.species_id,

@@ -30,6 +30,7 @@ interface WorldContextValue {
   fetchSnapshot: (location: GeoLocation) => Promise<void>
   revealPokemon: (clientId: string) => void
   removePokemon: (clientId: string) => void
+  removeWorldItem: (worldItemId: number) => void
 }
 
 const WorldContext = createContext<WorldContextValue | null>(null)
@@ -86,6 +87,17 @@ export function WorldProvider({ children }: { children: ReactNode }) {
     setSpawnedPokemon((prev) => prev.filter((p) => p.clientId !== clientId))
   }, [])
 
+  const removeWorldItem = useCallback((worldItemId: number) => {
+    setSnapshot((prev) =>
+      prev
+        ? {
+            ...prev,
+            world_item_spawns: prev.world_item_spawns.filter((i) => i.id !== worldItemId),
+          }
+        : prev,
+    )
+  }, [])
+
   return (
     <WorldContext.Provider
       value={{
@@ -96,6 +108,7 @@ export function WorldProvider({ children }: { children: ReactNode }) {
         fetchSnapshot,
         revealPokemon,
         removePokemon,
+        removeWorldItem,
       }}
     >
       {children}

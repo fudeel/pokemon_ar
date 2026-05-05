@@ -2,20 +2,20 @@
 
 'use client'
 
-import { useCallback, useEffect, useRef } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 
 import { usePlayer } from '@/context/PlayerContext'
 import { useWorld } from '@/context/WorldContext'
 import { usePlayerLocation } from '@/hooks/usePlayerLocation'
+import { playerApi } from '@/lib/api/player'
 
 import GameHud from './GameHud'
 import BattleEncounterScreen from './BattleEncounterScreen'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import ErrorMessage from '@/components/ui/ErrorMessage'
 
-import { useState } from 'react'
-import type { ActiveEncounter } from '@/types'
+import type { ActiveEncounter, WorldItemSpawn } from '@/types'
 
 const GameMap = dynamic(() => import('./GameMap'), {
   ssr: false,
@@ -26,19 +26,27 @@ const WORLD_REFRESH_INTERVAL_MS = 45_000
 
 export default function GameScreen() {
   const { profile, refreshProfile } = usePlayer()
-  const { snapshot, spawnedPokemon, isLoading, error, fetchSnapshot, revealPokemon, removePokemon } =
-    useWorld()
+  const {
+    snapshot,
+    spawnedPokemon,
+    isLoading,
+    error,
+    fetchSnapshot,
+    revealPokemon,
+    removePokemon,
+    removeWorldItem,
+  } = useWorld()
   const { position, gpsUnavailable } = usePlayerLocation()
 
   const [activeEncounter, setActiveEncounter] = useState<ActiveEncounter | null>(null)
+  const [pickupError, setPickupError] = useState<string | null>(null)
   const lastFetchedRef = useRef<number>(0)
 
-  // Fetch world snapshot when position is available and on interval
   useEffect(() => {
     if (!position) return
 
     const now = Date.now()
-    if (now - lastFetchedRef.current < 5_000) return // debounce on first mount
+    if (now - lastFetchedRef.current < 5_000) return
 
     fetchSnapshot({ latitude: position.latitude, longitude: position.longitude })
     lastFetchedRef.current = now
@@ -60,6 +68,24 @@ export default function GameScreen() {
     [removePokemon, refreshProfile],
   )
 
+  const handlePickupItem = useCallback(
+    async (item: WorldItemSpawn) => {
+      if (!position) return
+      setPickupError(null)
+      try {
+        await playerApi.collectWorldItem(item.id, {
+          latitude: position.latitude,
+          longitude: position.longitude,
+        })
+        removeWorldItem(item.id)
+        await refreshProfile()
+      } catch (e) {
+        setPickupError(e instanceof Error ? e.message : 'Could not pick up item.')
+      }
+    },
+    [position, removeWorldItem, refreshProfile],
+  )
+
   if (!position) return <LoadingScreen message="Acquiring position…" />
 
   return (
@@ -70,6 +96,7 @@ export default function GameScreen() {
         spawnedPokemon={spawnedPokemon}
         onRevealPokemon={revealPokemon}
         onEncounter={setActiveEncounter}
+        onPickupItem={handlePickupItem}
       />
 
       <GameHud
@@ -79,9 +106,12 @@ export default function GameScreen() {
         gpsUnavailable={gpsUnavailable}
       />
 
-      {error && (
+      {(error || pickupError) && (
         <div className="absolute bottom-20 left-3 right-3 z-10">
-          <ErrorMessage message={error} />
+          <ErrorMessage
+            message={pickupError ?? error ?? ''}
+            onDismiss={pickupError ? () => setPickupError(null) : undefined}
+          />
         </div>
       )}
 

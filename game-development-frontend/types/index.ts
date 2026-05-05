@@ -52,6 +52,7 @@ export interface SpawnAreaPokemon {
 export interface SpawnArea {
   id: number
   name: string
+  polygon: GeoLocation[]
   center: GeoLocation
   radius_meters: number
   pokemon: SpawnAreaPokemon[]
@@ -61,11 +62,40 @@ export interface EventArea {
   id: number
   name: string
   description: string | null
+  polygon: GeoLocation[]
   center: GeoLocation
   radius_meters: number
   starts_at: string
   ends_at: string
   metadata: Record<string, unknown>
+}
+
+export interface ItemSpawnAreaItem {
+  item_id: number
+  item_name: string
+  item_category: string
+  spawn_chance: number
+  max_quantity: number
+}
+
+export interface ItemSpawnArea {
+  id: number
+  name: string
+  polygon: GeoLocation[]
+  center: GeoLocation
+  radius_meters: number
+  items: ItemSpawnAreaItem[]
+}
+
+export interface WorldItemSpawn {
+  id: number
+  item_id: number
+  item_name: string
+  item_category: string
+  quantity: number
+  location: GeoLocation
+  is_hidden: boolean
+  expires_at: string | null
 }
 
 export interface GymDefender {
@@ -103,6 +133,8 @@ export interface WorldSnapshotResponse {
   event_areas: EventArea[]
   gyms: Gym[]
   rare_wild_pokemon: RareWildPokemon[]
+  world_item_spawns: WorldItemSpawn[]
+  item_spawn_areas: ItemSpawnArea[]
 }
 
 export interface PlayerLoginResponse {

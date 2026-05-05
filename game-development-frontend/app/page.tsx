@@ -6,7 +6,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { usePlayer } from '@/context/PlayerContext'
 import NameEntryForm from '@/components/entry/NameEntryForm'
-import StarterSelection from '@/components/entry/StarterSelection'
+import StarterMapSelection from '@/components/entry/starter-map/StarterMapSelection'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 
 export default function EntryPage() {
@@ -21,17 +21,13 @@ export default function EntryPage() {
 
   if (isLoading) return <LoadingScreen message="Entering the world…" />
 
-  // No session yet: show name entry
   if (!session) {
-    return (
-      <NameEntryForm isLoading={isLoading} error={error} onSubmit={login} />
-    )
+    return <NameEntryForm isLoading={isLoading} error={error} onSubmit={login} />
   }
 
-  // Session exists but no starter: show starter selection
   if (!session.has_chosen_starter) {
     return (
-      <StarterSelection
+      <StarterMapSelection
         onStarterChosen={() => {
           updateSession({ has_chosen_starter: true })
           router.replace('/game')
@@ -40,6 +36,5 @@ export default function EntryPage() {
     )
   }
 
-  // Redirect handled by useEffect
   return <LoadingScreen message="Loading world…" />
 }

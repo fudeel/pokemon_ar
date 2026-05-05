@@ -11,19 +11,24 @@ import SpawnedPokemonMarker from './SpawnedPokemonMarker'
 import RarePokemonMarker from './RarePokemonMarker'
 import NpcMarker from './NpcMarker'
 import GymMarker from './GymMarker'
-import SpawnAreaCircle from './SpawnAreaCircle'
+import MapObjectMarker from './MapObjectMarker'
+import WorldItemMarker from './WorldItemMarker'
+import SpawnAreaPolygon from './SpawnAreaPolygon'
+import EventAreaPolygon from './EventAreaPolygon'
+import ItemSpawnAreaPolygon from './ItemSpawnAreaPolygon'
 
 import { distanceMeters } from '@/lib/spawner/GeoUtils'
 import type {
   ActiveEncounter,
   PlayerPosition,
-  RareWildPokemon,
   SpawnedPokemon,
+  WorldItemSpawn,
   WorldSnapshotResponse,
 } from '@/types'
 
 const REVEAL_RADIUS_METERS = 80
 const CAPTURE_RADIUS_METERS = 30
+const ITEM_PICKUP_RADIUS_METERS = 15
 
 interface GameMapProps {
   playerPosition: PlayerPosition
@@ -31,6 +36,7 @@ interface GameMapProps {
   spawnedPokemon: SpawnedPokemon[]
   onRevealPokemon: (clientId: string) => void
   onEncounter: (encounter: ActiveEncounter) => void
+  onPickupItem: (item: WorldItemSpawn) => void
 }
 
 function MapFollower({ position }: { position: PlayerPosition }) {
@@ -47,6 +53,7 @@ export default function GameMap({
   spawnedPokemon,
   onRevealPokemon,
   onEncounter,
+  onPickupItem,
 }: GameMapProps) {
   const playerGeo = { latitude: playerPosition.latitude, longitude: playerPosition.longitude }
 
@@ -55,6 +62,9 @@ export default function GameMap({
 
   const isInCaptureRange = (lat: number, lng: number) =>
     distanceMeters(playerGeo, { latitude: lat, longitude: lng }) <= CAPTURE_RADIUS_METERS
+
+  const isInPickupRange = (lat: number, lng: number) =>
+    distanceMeters(playerGeo, { latitude: lat, longitude: lng }) <= ITEM_PICKUP_RADIUS_METERS
 
   return (
     <MapContainer
@@ -70,25 +80,46 @@ export default function GameMap({
 
       <MapFollower position={playerPosition} />
 
-      {/* Spawn area zones */}
+      {/* Polygonal zones */}
       {snapshot?.spawn_areas.map((area) => (
-        <SpawnAreaCircle key={area.id} area={area} />
+        <SpawnAreaPolygon key={`spawn-${area.id}`} area={area} />
+      ))}
+      {snapshot?.event_areas.map((area) => (
+        <EventAreaPolygon key={`event-${area.id}`} area={area} />
+      ))}
+      {snapshot?.item_spawn_areas.map((area) => (
+        <ItemSpawnAreaPolygon key={`item-area-${area.id}`} area={area} />
       ))}
 
-      {/* NPC markers */}
+      {/* Static map objects */}
+      {snapshot?.map_objects.map((obj) => (
+        <MapObjectMarker key={`map-${obj.id}`} mapObject={obj} />
+      ))}
+
+      {/* NPCs */}
       {snapshot?.npcs.map((npc) => (
-        <NpcMarker key={npc.id} npc={npc} />
+        <NpcMarker key={`npc-${npc.id}`} npc={npc} />
       ))}
 
-      {/* Gym markers */}
+      {/* Gyms */}
       {snapshot?.gyms.map((gym) => (
-        <GymMarker key={gym.id} gym={gym} />
+        <GymMarker key={`gym-${gym.id}`} gym={gym} />
       ))}
 
-      {/* Rare pokemon markers (server-placed) */}
+      {/* World items */}
+      {snapshot?.world_item_spawns.map((item) => (
+        <WorldItemMarker
+          key={`witem-${item.id}`}
+          item={item}
+          isInPickupRange={isInPickupRange(item.location.latitude, item.location.longitude)}
+          onPickup={onPickupItem}
+        />
+      ))}
+
+      {/* Rare pokemon (server-placed) */}
       {snapshot?.rare_wild_pokemon.map((rare) => (
         <RarePokemonMarker
-          key={rare.id}
+          key={`rare-${rare.id}`}
           pokemon={rare}
           isInCaptureRange={isInCaptureRange(rare.location.latitude, rare.location.longitude)}
           onCapture={() =>
