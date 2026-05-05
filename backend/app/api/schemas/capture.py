@@ -19,3 +19,18 @@ class CaptureResponse(BaseModel):
     rare_pokemon_id: int
     pokemon_instance: PokemonInstanceModel | None
     remaining_pokeballs: int
+
+
+class CommonCaptureRequest(BaseModel):
+    species_id: int
+    level: int
+    pokemon_current_hp: int
+    pokemon_max_hp: int
+    pokeball_item_id: int
+    player_location: GeoLocationModel
+
+
+class CommonCaptureResponse(BaseModel):
+    success: bool
+    pokemon_instance: PokemonInstanceModel | None
+    remaining_pokeballs: int

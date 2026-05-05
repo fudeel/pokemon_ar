@@ -29,6 +29,13 @@ MAX_MOVES_PER_POKEMON = 4
 
 
 @dataclass(frozen=True, slots=True)
+class CommonCaptureOutcome:
+    success: bool
+    pokemon_instance: PokemonInstance | None
+    remaining_pokeballs: int
+
+
+@dataclass(frozen=True, slots=True)
 class CaptureOutcome:
     success: bool
     rare_pokemon_id: int
@@ -118,6 +125,86 @@ class CaptureService:
             pokemon_instance=instance,
             remaining_pokeballs=remaining,
         )
+
+    def capture_common(
+        self,
+        *,
+        player_id: int,
+        species_id: int,
+        level: int,
+        pokemon_current_hp: int,
+        pokemon_max_hp: int,
+        pokeball_item_id: int,
+        player_location: GeoLocation,
+    ) -> CommonCaptureOutcome:
+        ball = self._items.get_by_id(pokeball_item_id)
+        if ball.category is not ItemCategory.POKEBALL:
+            raise ValidationError(f"item {ball.name} is not a pokeball")
+        catch_multiplier = (
+            ball.effect.value
+            if ball.effect is not None and isinstance(ball.effect.value, (int, float))
+            else None
+        )
+        if catch_multiplier is None or catch_multiplier <= 0:
+            raise ValidationError(f"pokeball {ball.name} has no capture multiplier")
+
+        inventory = self._inventory.get_for_player(player_id)
+        if not inventory.has(ball.id, 1):
+            raise InsufficientResourcesError(f"player has no {ball.name}")
+
+        remaining = self._inventory.consume(player_id, ball.id, 1)
+
+        species = self._species.get_by_id(species_id)
+        safe_max = max(pokemon_max_hp, 1)
+        hp_factor = (3 * safe_max - 2 * max(pokemon_current_hp, 0)) / (3 * safe_max)
+        catch_chance = (species.capture_rate / 255.0) * hp_factor * (catch_multiplier / 100.0)
+        catch_chance = max(0.0, min(0.95, catch_chance))
+        roll = secrets.randbelow(1_000_000) / 1_000_000
+
+        if roll >= catch_chance:
+            return CommonCaptureOutcome(
+                success=False,
+                pokemon_instance=None,
+                remaining_pokeballs=remaining,
+            )
+
+        instance = self._materialize_common_capture(player_id, species_id, level, player_location)
+        return CommonCaptureOutcome(
+            success=True,
+            pokemon_instance=instance,
+            remaining_pokeballs=remaining,
+        )
+
+    def _materialize_common_capture(
+        self,
+        player_id: int,
+        species_id: int,
+        level: int,
+        player_location: GeoLocation,
+    ) -> PokemonInstance:
+        species = self._species.get_by_id(species_id)
+        ivs = PokemonInstance.roll_random_ivs()
+        learnable = self._moves.list_learnable_for_species(species.id, max_level=level)
+        chosen = learnable[-MAX_MOVES_PER_POKEMON:]
+        equipped = [
+            EquippedMove(move=item.move, slot=index + 1, current_pp=item.move.pp)
+            for index, item in enumerate(chosen)
+        ]
+        instance = PokemonInstance(
+            id=None,
+            species=species,
+            owner_player_id=player_id,
+            nickname=None,
+            level=level,
+            experience=level**3,
+            current_hp=1,
+            ivs=ivs,
+            moves=equipped,
+            caught_at=datetime.now(timezone.utc),
+            caught_location=player_location,
+        )
+        instance.heal_full()
+        return self._instances.insert(instance)
 
     def _compute_catch_probability(self, wild: WildPokemon, ball_multiplier_percent: float) -> float:
         species = self._species.get_by_id(wild.species_id)

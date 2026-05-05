@@ -115,8 +115,12 @@ export default function GameScreen({
       {activeEncounter && (
         <BattleEncounterScreen
           encounter={activeEncounter}
+          position={position}
           profile={profile}
-          onClose={() => setActiveEncounter(null)}
+          onClose={async (captured: boolean) => {
+            setActiveEncounter(null)
+            if (captured) await refreshProfile()
+          }}
         />
       )}
     </div>

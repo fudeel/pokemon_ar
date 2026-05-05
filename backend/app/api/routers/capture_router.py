@@ -6,7 +6,12 @@ from fastapi import APIRouter, Depends
 
 from app.api.deps import container_dep, current_player
 from app.api.presenters import pokemon_instance_to_model
-from app.api.schemas.capture import CaptureRequest, CaptureResponse
+from app.api.schemas.capture import (
+    CaptureRequest,
+    CaptureResponse,
+    CommonCaptureRequest,
+    CommonCaptureResponse,
+)
 from app.container import Container
 from app.domain.characters.player import Player
 from app.domain.world.geo_location import GeoLocation
@@ -33,6 +38,32 @@ def attempt_rare_capture(
     return CaptureResponse(
         success=outcome.success,
         rare_pokemon_id=outcome.rare_pokemon_id,
+        pokemon_instance=pokemon_instance_to_model(outcome.pokemon_instance) if outcome.pokemon_instance else None,
+        remaining_pokeballs=outcome.remaining_pokeballs,
+    )
+
+
+@router.post("/common", response_model=CommonCaptureResponse)
+def attempt_common_capture(
+    payload: CommonCaptureRequest,
+    player: Player = Depends(current_player),
+    container: Container = Depends(container_dep),
+) -> CommonCaptureResponse:
+    location = GeoLocation(
+        latitude=payload.player_location.latitude,
+        longitude=payload.player_location.longitude,
+    )
+    outcome = container.capture_service.capture_common(
+        player_id=player.id,
+        species_id=payload.species_id,
+        level=payload.level,
+        pokemon_current_hp=payload.pokemon_current_hp,
+        pokemon_max_hp=payload.pokemon_max_hp,
+        pokeball_item_id=payload.pokeball_item_id,
+        player_location=location,
+    )
+    return CommonCaptureResponse(
+        success=outcome.success,
         pokemon_instance=pokemon_instance_to_model(outcome.pokemon_instance) if outcome.pokemon_instance else None,
         remaining_pokeballs=outcome.remaining_pokeballs,
     )

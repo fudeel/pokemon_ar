@@ -151,6 +151,22 @@ export interface PlayerRegistrationResponse {
   has_chosen_starter: boolean
 }
 
+export interface Move {
+  id: number
+  name: string
+  type: string
+  category: string
+  power: number | null
+  accuracy: number | null
+  pp: number
+}
+
+export interface EquippedMove {
+  slot: number
+  move: Move
+  current_pp: number
+}
+
 export interface PokemonInstance {
   id: number
   species: PokemonSpecies
@@ -165,6 +181,7 @@ export interface PokemonInstance {
     special_defense: number
     speed: number
   }
+  moves: EquippedMove[]
 }
 
 export interface InventorySlot {
@@ -223,6 +240,7 @@ export interface ActiveEncounter {
   kind: 'common' | 'rare'
   clientId?: string
   rarePokemonId?: number
+  speciesId?: number
   speciesName: string
   level: number
   location: GeoLocation

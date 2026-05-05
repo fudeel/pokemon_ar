@@ -137,6 +137,7 @@ export default function GameMap({
             onEncounter({
               kind: 'rare',
               rarePokemonId: rare.id,
+              speciesId: rare.species_id,
               speciesName: rare.species_name,
               level: rare.level,
               location: rare.location,
@@ -164,6 +165,7 @@ export default function GameMap({
               onEncounter({
                 kind: 'common',
                 clientId: poke.clientId,
+                speciesId: poke.speciesId,
                 speciesName: poke.speciesName,
                 level: poke.level,
                 location: poke.location,
