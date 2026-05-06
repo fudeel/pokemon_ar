@@ -146,10 +146,17 @@ export interface SpawnAreaPokemonEntry {
   spawn_chance: number
 }
 
+export interface SpawnAreaItemEntry {
+  item_id: number
+  spawn_chance: number
+  max_quantity: number
+}
+
 export interface SpawnAreaPayload {
   name: string
   polygon: { latitude: number; longitude: number }[]
   pokemon: SpawnAreaPokemonEntry[]
+  items: SpawnAreaItemEntry[]
 }
 
 export function createSpawnArea(payload: SpawnAreaPayload): Promise<SpawnArea> {
@@ -161,6 +168,13 @@ export function setSpawnAreaPokemon(
   pokemon: SpawnAreaPokemonEntry[],
 ): Promise<SpawnArea> {
   return apiClient.put(`/admin/spawn-areas/${id}/pokemon`, { pokemon })
+}
+
+export function setSpawnAreaItems(
+  id: number,
+  items: SpawnAreaItemEntry[],
+): Promise<SpawnArea> {
+  return apiClient.put(`/admin/spawn-areas/${id}/items`, { items })
 }
 
 export function deleteSpawnArea(id: number): Promise<void> {

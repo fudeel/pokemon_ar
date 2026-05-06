@@ -299,6 +299,7 @@ export default function MapPage() {
         <EditSpawnAreaModal
           area={editingSpawnArea}
           species={species}
+          items={items}
           onSaved={handleSpawnAreaUpdated}
           onClose={() => setEditingSpawnArea(null)}
         />

@@ -32,6 +32,7 @@ from app.api.schemas.world import (
     GymModel,
     MapObjectModel,
     NpcModel,
+    SpawnAreaItemModel,
     SpawnAreaModel,
     SpawnAreaPokemonModel,
     WildPokemonModel,
@@ -205,6 +206,16 @@ def spawn_area_to_model(area: SpawnArea) -> SpawnAreaModel:
                 spawn_chance=p.spawn_chance,
             )
             for p in area.pokemon
+        ],
+        items=[
+            SpawnAreaItemModel(
+                item_id=i.item_id,
+                item_name=i.item_name,
+                item_category=i.item_category,
+                spawn_chance=i.spawn_chance,
+                max_quantity=i.max_quantity,
+            )
+            for i in area.items
         ],
     )
 

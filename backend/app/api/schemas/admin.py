@@ -65,14 +65,25 @@ class SpawnAreaPokemonEntry(BaseModel):
     spawn_chance: float = Field(ge=0.0, le=100.0)
 
 
+class SpawnAreaItemEntry(BaseModel):
+    item_id: int = Field(ge=1)
+    spawn_chance: float = Field(gt=0.0, le=100.0)
+    max_quantity: int = Field(default=1, ge=1)
+
+
 class SpawnAreaCreateRequest(BaseModel):
     name: str
     polygon: list[GeoLocationModel] = Field(min_length=3)
     pokemon: list[SpawnAreaPokemonEntry] = []
+    items: list[SpawnAreaItemEntry] = []
 
 
 class SpawnAreaSetPokemonRequest(BaseModel):
     pokemon: list[SpawnAreaPokemonEntry]
+
+
+class SpawnAreaSetItemsRequest(BaseModel):
+    items: list[SpawnAreaItemEntry]
 
 
 class EventAreaCreateRequest(BaseModel):

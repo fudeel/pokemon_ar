@@ -49,6 +49,14 @@ export interface SpawnAreaPokemon {
   spawn_chance: number
 }
 
+export interface SpawnAreaItem {
+  item_id: number
+  item_name: string
+  item_category: string
+  spawn_chance: number
+  max_quantity: number
+}
+
 export interface SpawnArea {
   id: number
   name: string
@@ -56,6 +64,7 @@ export interface SpawnArea {
   center: GeoLocation
   radius_meters: number
   pokemon: SpawnAreaPokemon[]
+  items: SpawnAreaItem[]
 }
 
 export interface EventArea {

@@ -33,6 +33,7 @@ from app.api.schemas.admin import (
     QuestUpsertRequest,
     RareWildPokemonCreateRequest,
     SpawnAreaCreateRequest,
+    SpawnAreaSetItemsRequest,
     SpawnAreaSetPokemonRequest,
     SpeciesMoveEntry,
     SpeciesMovesSetRequest,
@@ -366,6 +367,11 @@ def create_spawn_area(
             area.id,
             [(entry.species_id, entry.spawn_chance) for entry in payload.pokemon],
         )
+    if payload.items:
+        area = container.admin_service.set_spawn_area_items(
+            area.id,
+            [(entry.item_id, entry.spawn_chance, entry.max_quantity) for entry in payload.items],
+        )
     return spawn_area_to_model(area)
 
 
@@ -378,6 +384,19 @@ def set_spawn_area_pokemon(
     area = container.admin_service.set_spawn_area_pokemon(
         spawn_area_id,
         [(entry.species_id, entry.spawn_chance) for entry in payload.pokemon],
+    )
+    return spawn_area_to_model(area)
+
+
+@router.put("/spawn-areas/{spawn_area_id}/items", response_model=SpawnAreaModel)
+def set_spawn_area_items(
+    spawn_area_id: int,
+    payload: SpawnAreaSetItemsRequest,
+    container: Container = Depends(container_dep),
+) -> SpawnAreaModel:
+    area = container.admin_service.set_spawn_area_items(
+        spawn_area_id,
+        [(entry.item_id, entry.spawn_chance, entry.max_quantity) for entry in payload.items],
     )
     return spawn_area_to_model(area)
 

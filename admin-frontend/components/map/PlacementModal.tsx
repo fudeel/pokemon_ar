@@ -91,6 +91,7 @@ export function PlacementModal({ type, coords, polygon, species, items, onCreate
         <SpawnAreaForm
           polygon={polygon}
           species={species}
+          items={items}
           onSaved={(area: SpawnArea) => handleCreated(area)}
           onCancel={onClose}
         />

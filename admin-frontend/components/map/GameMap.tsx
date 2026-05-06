@@ -163,6 +163,10 @@ export function GameMap({
 
   const isDrawingMode = activeType !== null && POLYGON_AREA_TYPES.has(activeType)
   const canClose = drawingPolygon.length >= 3
+  // While any tool is active, polygons must let clicks fall through to the map
+  // so users can place points/markers inside an existing area or add polygon
+  // vertices on top of one. Popups stay available when no tool is selected.
+  const polygonsInteractive = activeType === null
 
   return (
     <MapContainer
@@ -221,8 +225,9 @@ export function GameMap({
 
       {data.spawnAreas.map((area) => (
         <Polygon
-          key={`sa-${area.id}`}
+          key={`sa-${area.id}-${polygonsInteractive ? 'i' : 'n'}`}
           positions={polygonLatLngs(area.polygon)}
+          interactive={polygonsInteractive}
           pathOptions={{ color: '#10b981', fillColor: '#10b981', fillOpacity: 0.15, weight: 1.5 }}
         >
           <Popup>
@@ -234,9 +239,19 @@ export function GameMap({
               ) : (
                 <ul className="space-y-0.5">
                   {area.pokemon.map((p) => (
-                    <li key={p.species_id} className="flex justify-between gap-3">
+                    <li key={`p-${p.species_id}`} className="flex justify-between gap-3">
                       <span>{p.species_name}</span>
                       <span className="text-gray-400">{p.spawn_chance}%</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {area.items.length > 0 && (
+                <ul className="space-y-0.5 pt-1 border-t border-surface-3">
+                  {area.items.map((it) => (
+                    <li key={`i-${it.item_id}`} className="flex justify-between gap-3">
+                      <span>{it.item_name}</span>
+                      <span className="text-gray-400">{it.spawn_chance}% ×{it.max_quantity}</span>
                     </li>
                   ))}
                 </ul>
@@ -256,8 +271,9 @@ export function GameMap({
 
       {data.eventAreas.map((area) => (
         <Polygon
-          key={`ea-${area.id}`}
+          key={`ea-${area.id}-${polygonsInteractive ? 'i' : 'n'}`}
           positions={polygonLatLngs(area.polygon)}
+          interactive={polygonsInteractive}
           pathOptions={{ color: '#f59e0b', fillColor: '#f59e0b', fillOpacity: 0.12, weight: 1.5, dashArray: '6 4' }}
         >
           <Popup>
@@ -346,8 +362,9 @@ export function GameMap({
 
       {data.itemSpawnAreas.map((area) => (
         <Polygon
-          key={`isa-${area.id}`}
+          key={`isa-${area.id}-${polygonsInteractive ? 'i' : 'n'}`}
           positions={polygonLatLngs(area.polygon)}
+          interactive={polygonsInteractive}
           pathOptions={{ color: '#f97316', fillColor: '#f97316', fillOpacity: 0.12, weight: 1.5, dashArray: '4 3' }}
         >
           <Popup>

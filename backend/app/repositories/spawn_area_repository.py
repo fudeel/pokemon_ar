@@ -14,7 +14,7 @@ from app.domain.world.polygon import (
     hydrate_polygon,
     serialize_polygon,
 )
-from app.domain.world.spawn_area import SpawnArea, SpawnAreaPokemon
+from app.domain.world.spawn_area import SpawnArea, SpawnAreaItem, SpawnAreaPokemon
 from app.repositories.base_repository import BaseRepository
 
 
@@ -53,7 +53,7 @@ class SpawnAreaRepository(BaseRepository):
             )
             area_id = cursor.lastrowid
             row = conn.execute("SELECT * FROM spawn_areas WHERE id = ?", (area_id,)).fetchone()
-        return self._hydrate(row, [])
+        return self._hydrate(row, [], [])
 
     def set_pokemon(self, spawn_area_id: int, entries: list[tuple[int, float]]) -> list[SpawnAreaPokemon]:
         """Replace the full pokemon list for a spawn area. entries = [(species_id, spawn_chance), ...]"""
@@ -66,12 +66,29 @@ class SpawnAreaRepository(BaseRepository):
                 )
         return self._load_pokemon(spawn_area_id)
 
+    def set_items(
+        self,
+        spawn_area_id: int,
+        entries: list[tuple[int, float, int]],  # (item_id, spawn_chance, max_quantity)
+    ) -> list[SpawnAreaItem]:
+        """Replace the full item list for a spawn area."""
+        with self.db.transaction() as conn:
+            conn.execute("DELETE FROM spawn_area_items WHERE spawn_area_id = ?", (spawn_area_id,))
+            conn.executemany(
+                """
+                INSERT INTO spawn_area_items (spawn_area_id, item_id, spawn_chance, max_quantity)
+                VALUES (?, ?, ?, ?)
+                """,
+                [(spawn_area_id, item_id, chance, qty) for item_id, chance, qty in entries],
+            )
+        return self._load_items(spawn_area_id)
+
     def get_by_id(self, spawn_area_id: int) -> SpawnArea:
         with self.db.connection() as conn:
             row = conn.execute("SELECT * FROM spawn_areas WHERE id = ?", (spawn_area_id,)).fetchone()
         if row is None:
             raise NotFoundError(f"spawn_area {spawn_area_id} not found")
-        return self._hydrate(row, self._load_pokemon(spawn_area_id))
+        return self._hydrate(row, self._load_pokemon(spawn_area_id), self._load_items(spawn_area_id))
 
     def delete(self, spawn_area_id: int) -> None:
         with self.db.connection() as conn:
@@ -88,12 +105,18 @@ class SpawnAreaRepository(BaseRepository):
                 """,
                 (min_lat, max_lat, min_lng, max_lng),
             ).fetchall()
-        return [self._hydrate(row, self._load_pokemon(row["id"])) for row in rows]
+        return [
+            self._hydrate(row, self._load_pokemon(row["id"]), self._load_items(row["id"]))
+            for row in rows
+        ]
 
     def list_all(self) -> list[SpawnArea]:
         with self.db.connection() as conn:
             rows = conn.execute("SELECT * FROM spawn_areas ORDER BY id").fetchall()
-        return [self._hydrate(row, self._load_pokemon(row["id"])) for row in rows]
+        return [
+            self._hydrate(row, self._load_pokemon(row["id"]), self._load_items(row["id"]))
+            for row in rows
+        ]
 
     # ── private ──────────────────────────────────────────────────────────────
 
@@ -118,7 +141,36 @@ class SpawnAreaRepository(BaseRepository):
             for row in rows
         ]
 
-    def _hydrate(self, row: sqlite3.Row, pokemon: list[SpawnAreaPokemon]) -> SpawnArea:
+    def _load_items(self, spawn_area_id: int) -> list[SpawnAreaItem]:
+        with self.db.connection() as conn:
+            rows = conn.execute(
+                """
+                SELECT sai.item_id, i.name AS item_name, i.category AS item_category,
+                       sai.spawn_chance, sai.max_quantity
+                FROM spawn_area_items sai
+                JOIN items i ON i.id = sai.item_id
+                WHERE sai.spawn_area_id = ?
+                ORDER BY i.name
+                """,
+                (spawn_area_id,),
+            ).fetchall()
+        return [
+            SpawnAreaItem(
+                item_id=row["item_id"],
+                item_name=row["item_name"],
+                item_category=row["item_category"],
+                spawn_chance=row["spawn_chance"],
+                max_quantity=row["max_quantity"],
+            )
+            for row in rows
+        ]
+
+    def _hydrate(
+        self,
+        row: sqlite3.Row,
+        pokemon: list[SpawnAreaPokemon],
+        items: list[SpawnAreaItem],
+    ) -> SpawnArea:
         polygon = hydrate_polygon(
             payload=row["polygon_points"],
             fallback_center=GeoLocation(latitude=row["center_lat"], longitude=row["center_lng"]),
@@ -132,6 +184,7 @@ class SpawnAreaRepository(BaseRepository):
             secondary_type=PokemonType(row["secondary_type"]) if row["secondary_type"] else None,
             spawn_weight=row["spawn_weight"],
             pokemon=pokemon,
+            items=items,
             created_at=self.parse_timestamp(row["created_at"]) or datetime.now(timezone.utc),
             created_by_admin_id=row["created_by_admin_id"],
         )

@@ -241,6 +241,19 @@ CREATE TABLE IF NOT EXISTS spawn_area_pokemon (
 
 CREATE INDEX IF NOT EXISTS idx_spawn_area_pokemon ON spawn_area_pokemon(spawn_area_id);
 
+CREATE TABLE IF NOT EXISTS spawn_area_items (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    spawn_area_id INTEGER NOT NULL,
+    item_id INTEGER NOT NULL,
+    spawn_chance REAL NOT NULL CHECK (spawn_chance > 0 AND spawn_chance <= 100),
+    max_quantity INTEGER NOT NULL DEFAULT 1 CHECK (max_quantity >= 1),
+    UNIQUE (spawn_area_id, item_id),
+    FOREIGN KEY (spawn_area_id) REFERENCES spawn_areas(id) ON DELETE CASCADE,
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_spawn_area_items ON spawn_area_items(spawn_area_id);
+
 CREATE TABLE IF NOT EXISTS event_areas (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,

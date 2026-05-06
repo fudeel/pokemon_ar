@@ -358,6 +358,15 @@ class AdminService:
         self._spawn_areas.set_pokemon(spawn_area_id, entries)
         return self._spawn_areas.get_by_id(spawn_area_id)
 
+    def set_spawn_area_items(
+        self,
+        spawn_area_id: int,
+        entries: list[tuple[int, float, int]],
+    ) -> SpawnArea:
+        """Replace the item list of a spawn area and return the updated area."""
+        self._spawn_areas.set_items(spawn_area_id, entries)
+        return self._spawn_areas.get_by_id(spawn_area_id)
+
     def get_spawn_area(self, spawn_area_id: int) -> SpawnArea:
         return self._spawn_areas.get_by_id(spawn_area_id)
 

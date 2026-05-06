@@ -37,6 +37,14 @@ class SpawnAreaPokemonModel(BaseModel):
     spawn_chance: float
 
 
+class SpawnAreaItemModel(BaseModel):
+    item_id: int
+    item_name: str
+    item_category: str
+    spawn_chance: float
+    max_quantity: int
+
+
 class SpawnAreaModel(BaseModel):
     id: int
     name: str
@@ -44,6 +52,7 @@ class SpawnAreaModel(BaseModel):
     center: GeoLocationModel
     radius_meters: float
     pokemon: list[SpawnAreaPokemonModel]
+    items: list[SpawnAreaItemModel]
 
 
 class EventAreaModel(BaseModel):

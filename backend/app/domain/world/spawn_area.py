@@ -28,6 +28,23 @@ class SpawnAreaPokemon:
 
 
 @dataclass(frozen=True, slots=True)
+class SpawnAreaItem:
+    """An item that can spawn inside a spawn area, with its probability."""
+
+    item_id: int
+    item_name: str
+    item_category: str
+    spawn_chance: float  # 0–100 percent
+    max_quantity: int
+
+    def __post_init__(self) -> None:
+        if not (0.0 < self.spawn_chance <= 100.0):
+            raise ValueError("spawn_chance must be in (0, 100]")
+        if self.max_quantity < 1:
+            raise ValueError("max_quantity must be >= 1")
+
+
+@dataclass(frozen=True, slots=True)
 class SpawnArea:
     """
     A polygonal zone placed by an admin. The client receives the polygon plus
@@ -48,6 +65,7 @@ class SpawnArea:
     secondary_type: PokemonType | None = None
     spawn_weight: float = 1.0
     pokemon: list[SpawnAreaPokemon] = field(default_factory=list)
+    items: list[SpawnAreaItem] = field(default_factory=list)
     created_at: datetime = field(default_factory=datetime.utcnow)
     created_by_admin_id: int | None = None
 
