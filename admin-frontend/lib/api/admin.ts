@@ -9,6 +9,7 @@ import type {
   ItemSpawnArea,
   LearnableMove,
   MapObject,
+  Merchant,
   Move,
   Npc,
   PokemonSpecies,
@@ -125,14 +126,64 @@ export interface NpcPayload {
   location: { latitude: number; longitude: number }
   dialogue: string | null
   metadata: Record<string, unknown> | null
+  merchant_id: number | null
 }
 
 export function createNpc(payload: NpcPayload): Promise<Npc> {
   return apiClient.post('/admin/npcs', payload)
 }
 
+export function assignNpcMerchant(npcId: number, merchantId: number | null): Promise<Npc> {
+  return apiClient.put(`/admin/npcs/${npcId}/merchant`, { merchant_id: merchantId })
+}
+
 export function deleteNpc(id: number): Promise<void> {
   return apiClient.delete(`/admin/npcs/${id}`)
+}
+
+// ── Merchants ─────────────────────────────────────────────────────────────────
+
+export function listMerchants(): Promise<Merchant[]> {
+  return apiClient.get('/admin/merchants')
+}
+
+export function getMerchant(id: number): Promise<Merchant> {
+  return apiClient.get(`/admin/merchants/${id}`)
+}
+
+export interface MerchantItemEntryPayload {
+  item_id: number
+  price_override: number | null
+}
+
+export interface MerchantCreatePayload {
+  name: string
+  description: string | null
+  items: MerchantItemEntryPayload[]
+}
+
+export interface MerchantUpdatePayload {
+  name: string
+  description: string | null
+}
+
+export function createMerchant(payload: MerchantCreatePayload): Promise<Merchant> {
+  return apiClient.post('/admin/merchants', payload)
+}
+
+export function updateMerchant(id: number, payload: MerchantUpdatePayload): Promise<Merchant> {
+  return apiClient.put(`/admin/merchants/${id}`, payload)
+}
+
+export function setMerchantItems(
+  id: number,
+  items: MerchantItemEntryPayload[],
+): Promise<Merchant> {
+  return apiClient.put(`/admin/merchants/${id}/items`, { items })
+}
+
+export function deleteMerchant(id: number): Promise<void> {
+  return apiClient.delete(`/admin/merchants/${id}`)
 }
 
 // ── Spawn Areas ───────────────────────────────────────────────────────────────

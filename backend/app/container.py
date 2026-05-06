@@ -12,6 +12,7 @@ from app.repositories.gym_repository import GymRepository
 from app.repositories.inventory_repository import InventoryRepository
 from app.repositories.item_repository import ItemRepository
 from app.repositories.map_object_repository import MapObjectRepository
+from app.repositories.merchant_repository import MerchantRepository
 from app.repositories.move_repository import MoveRepository
 from app.repositories.npc_repository import NpcRepository
 from app.repositories.player_repository import PlayerRepository
@@ -25,6 +26,7 @@ from app.repositories.world_item_spawn_repository import WorldItemSpawnRepositor
 from app.services.admin_service import AdminService
 from app.services.auth_service import AuthService
 from app.services.capture_service import CaptureService
+from app.services.merchant_service import MerchantService
 from app.services.player_profile_service import PlayerProfileService
 from app.services.starter_service import StarterService
 from app.services.world_item_collection_service import WorldItemCollectionService
@@ -52,6 +54,7 @@ class Container:
         self.item_repository = ItemRepository(self.database)
         self.inventory_repository = InventoryRepository(self.database, self.item_repository)
         self.map_object_repository = MapObjectRepository(self.database)
+        self.merchant_repository = MerchantRepository(self.database)
         self.npc_repository = NpcRepository(self.database)
         self.spawn_area_repository = SpawnAreaRepository(self.database)
         self.event_area_repository = EventAreaRepository(self.database)
@@ -116,11 +119,18 @@ class Container:
             world_item_spawn_repository=self.world_item_spawn_repository,
             item_spawn_area_repository=self.item_spawn_area_repository,
             map_object_repository=self.map_object_repository,
+            merchant_repository=self.merchant_repository,
             npc_repository=self.npc_repository,
             spawn_area_repository=self.spawn_area_repository,
             event_area_repository=self.event_area_repository,
             gym_repository=self.gym_repository,
             wild_pokemon_repository=self.wild_pokemon_repository,
+        )
+        self.merchant_service = MerchantService(
+            merchant_repository=self.merchant_repository,
+            npc_repository=self.npc_repository,
+            player_repository=self.player_repository,
+            inventory_repository=self.inventory_repository,
         )
 
     def initialize(self) -> None:

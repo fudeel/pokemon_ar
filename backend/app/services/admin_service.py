@@ -4,8 +4,9 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from app.core.exceptions import NotFoundError
+from app.core.exceptions import NotFoundError, ValidationError
 from app.domain.characters.non_player_character import NonPlayerCharacter, NPCRole
+from app.domain.items.merchant import Merchant
 from app.domain.characters.stats import BaseStats
 from app.domain.characters.wild_pokemon import WildPokemon
 from app.domain.pokemon.pokemon_species import PokemonSpecies
@@ -24,6 +25,7 @@ from app.repositories.event_area_repository import EventAreaRepository
 from app.repositories.gym_repository import GymRepository
 from app.repositories.item_repository import ItemRepository
 from app.repositories.map_object_repository import MapObjectRepository
+from app.repositories.merchant_repository import MerchantRepository
 from app.repositories.move_repository import MoveRepository
 from app.repositories.npc_repository import NpcRepository
 from app.repositories.pokemon_species_repository import PokemonSpeciesRepository
@@ -51,6 +53,7 @@ class AdminService:
         world_item_spawn_repository: WorldItemSpawnRepository,
         item_spawn_area_repository: ItemSpawnAreaRepository,
         map_object_repository: MapObjectRepository,
+        merchant_repository: MerchantRepository,
         npc_repository: NpcRepository,
         spawn_area_repository: SpawnAreaRepository,
         event_area_repository: EventAreaRepository,
@@ -64,6 +67,7 @@ class AdminService:
         self._world_item_spawns = world_item_spawn_repository
         self._item_spawn_areas = item_spawn_area_repository
         self._map_objects = map_object_repository
+        self._merchants = merchant_repository
         self._npcs = npc_repository
         self._spawn_areas = spawn_area_repository
         self._event_areas = event_area_repository
@@ -317,21 +321,89 @@ class AdminService:
         location: GeoLocation,
         dialogue: str | None,
         metadata: dict | None,
+        merchant_id: int | None = None,
     ) -> NonPlayerCharacter:
+        if merchant_id is not None:
+            if role is not NPCRole.MERCHANT:
+                raise ValidationError("merchant_id can only be set for merchant NPCs")
+            self._merchants.get_by_id(merchant_id)
         return self._npcs.create(
             name=name,
             role=role,
             location=location,
             dialogue=dialogue,
             metadata=metadata,
+            merchant_id=merchant_id,
             created_by_admin_id=admin_id,
         )
+
+    def assign_npc_merchant(self, npc_id: int, merchant_id: int | None) -> NonPlayerCharacter:
+        npc = self._npcs.get_by_id(npc_id)
+        if merchant_id is not None:
+            if npc.role is not NPCRole.MERCHANT:
+                raise ValidationError("merchant_id can only be set for merchant NPCs")
+            self._merchants.get_by_id(merchant_id)
+        return self._npcs.update_merchant(npc_id, merchant_id)
 
     def delete_npc(self, npc_id: int) -> None:
         self._npcs.delete(npc_id)
 
     def list_npcs(self) -> list[NonPlayerCharacter]:
         return self._npcs.list_all()
+
+    def create_merchant(
+        self,
+        *,
+        admin_id: int,
+        name: str,
+        description: str | None,
+        items: list[tuple[int, int | None]],
+    ) -> Merchant:
+        merchant = self._merchants.create(
+            name=name, description=description, created_by_admin_id=admin_id
+        )
+        if items:
+            self._validate_item_entries(items)
+            merchant = self._merchants.set_items(merchant.id, items)
+        return merchant
+
+    def update_merchant(
+        self,
+        *,
+        merchant_id: int,
+        name: str,
+        description: str | None,
+    ) -> Merchant:
+        return self._merchants.update(merchant_id, name=name, description=description)
+
+    def set_merchant_items(
+        self,
+        merchant_id: int,
+        items: list[tuple[int, int | None]],
+    ) -> Merchant:
+        self._validate_item_entries(items)
+        return self._merchants.set_items(merchant_id, items)
+
+    def delete_merchant(self, merchant_id: int) -> None:
+        self._merchants.delete(merchant_id)
+
+    def get_merchant(self, merchant_id: int) -> Merchant:
+        return self._merchants.get_by_id(merchant_id)
+
+    def list_merchants(self) -> list[Merchant]:
+        return self._merchants.list_all()
+
+    def _validate_item_entries(self, entries: list[tuple[int, int | None]]) -> None:
+        seen: set[int] = set()
+        for item_id, price_override in entries:
+            if item_id in seen:
+                raise ValidationError(f"item {item_id} listed more than once")
+            seen.add(item_id)
+            item = self._items.get_by_id(item_id)
+            if price_override is None and item.buy_price is None:
+                raise ValidationError(
+                    f"item '{item.name}' has no buy_price; provide a price_override"
+                )
 
     def create_spawn_area(
         self,

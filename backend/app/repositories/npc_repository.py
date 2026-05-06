@@ -20,13 +20,14 @@ class NpcRepository(BaseRepository):
         location: GeoLocation,
         dialogue: str | None,
         metadata: dict | None,
+        merchant_id: int | None,
         created_by_admin_id: int | None,
     ) -> NonPlayerCharacter:
         with self.db.connection() as conn:
             cursor = conn.execute(
                 """
-                INSERT INTO npcs (name, role, lat, lng, dialogue, metadata, created_by_admin_id)
-                VALUES (?, ?, ?, ?, ?, ?, ?)
+                INSERT INTO npcs (name, role, lat, lng, dialogue, metadata, merchant_id, created_by_admin_id)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     name,
@@ -35,10 +36,22 @@ class NpcRepository(BaseRepository):
                     location.longitude,
                     dialogue,
                     json.dumps(metadata) if metadata else None,
+                    merchant_id,
                     created_by_admin_id,
                 ),
             )
             row = conn.execute("SELECT * FROM npcs WHERE id = ?", (cursor.lastrowid,)).fetchone()
+        return self._hydrate(row)
+
+    def update_merchant(self, npc_id: int, merchant_id: int | None) -> NonPlayerCharacter:
+        with self.db.connection() as conn:
+            cursor = conn.execute(
+                "UPDATE npcs SET merchant_id = ? WHERE id = ?",
+                (merchant_id, npc_id),
+            )
+            if cursor.rowcount == 0:
+                raise NotFoundError(f"npc {npc_id} not found")
+            row = conn.execute("SELECT * FROM npcs WHERE id = ?", (npc_id,)).fetchone()
         return self._hydrate(row)
 
     def delete(self, npc_id: int) -> None:
@@ -68,6 +81,8 @@ class NpcRepository(BaseRepository):
         return [self._hydrate(row) for row in rows]
 
     def _hydrate(self, row: sqlite3.Row) -> NonPlayerCharacter:
+        keys = row.keys() if hasattr(row, "keys") else []
+        merchant_id = row["merchant_id"] if "merchant_id" in keys else None
         return NonPlayerCharacter(
             npc_id=row["id"],
             name=row["name"],
@@ -75,4 +90,5 @@ class NpcRepository(BaseRepository):
             location=GeoLocation(latitude=row["lat"], longitude=row["lng"]),
             dialogue=row["dialogue"],
             metadata=json.loads(row["metadata"]) if row["metadata"] else {},
+            merchant_id=merchant_id,
         )

@@ -8,25 +8,33 @@ import { Button } from '@/components/ui/Button'
 import { ErrorMessage } from '@/components/ui/ErrorMessage'
 import { createNpc } from '@/lib/api/admin'
 import { NPC_ROLES } from '@/types'
-import type { Npc } from '@/types'
+import type { Merchant, Npc } from '@/types'
 
 interface NpcFormProps {
   latitude: number
   longitude: number
+  merchants: Merchant[]
   onCreated: (npc: Npc) => void
   onCancel: () => void
 }
 
-export function NpcForm({ latitude, longitude, onCreated, onCancel }: NpcFormProps) {
+export function NpcForm({ latitude, longitude, merchants, onCreated, onCancel }: NpcFormProps) {
   const [name, setName] = useState('')
   const [role, setRole] = useState<string>(NPC_ROLES[0])
   const [dialogue, setDialogue] = useState('')
+  const [merchantId, setMerchantId] = useState<string>('')
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  const isMerchant = role === 'merchant'
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
+    if (isMerchant && merchantId === '') {
+      setError('Pick a merchant catalogue, or create one in the Merchants page first.')
+      return
+    }
     setLoading(true)
     try {
       const npc = await createNpc({
@@ -35,6 +43,7 @@ export function NpcForm({ latitude, longitude, onCreated, onCancel }: NpcFormPro
         location: { latitude, longitude },
         dialogue: dialogue.trim() || null,
         metadata: null,
+        merchant_id: isMerchant ? Number(merchantId) : null,
       })
       onCreated(npc)
     } catch (err: unknown) {
@@ -57,9 +66,32 @@ export function NpcForm({ latitude, longitude, onCreated, onCancel }: NpcFormPro
       <Select
         label="Role"
         value={role}
-        onChange={(e) => setRole(e.target.value)}
+        onChange={(e) => {
+          setRole(e.target.value)
+          if (e.target.value !== 'merchant') setMerchantId('')
+        }}
         options={NPC_ROLES.map((r) => ({ value: r, label: r }))}
       />
+      {isMerchant && (
+        merchants.length === 0 ? (
+          <p className="text-xs text-amber-400 bg-amber-900/20 border border-amber-800 rounded px-3 py-2">
+            No merchant catalogues exist. Create one in the Merchants page first.
+          </p>
+        ) : (
+          <Select
+            label="Merchant catalogue"
+            value={merchantId}
+            onChange={(e) => setMerchantId(e.target.value)}
+            options={[
+              { value: '', label: '— select catalogue —' },
+              ...merchants.map((m) => ({
+                value: String(m.id),
+                label: `${m.name} (${m.items.length} item${m.items.length === 1 ? '' : 's'})`,
+              })),
+            ]}
+          />
+        )
+      )}
       <div className="flex flex-col gap-1">
         <label className="text-xs font-medium text-gray-400 uppercase tracking-wide">
           Dialogue (optional)

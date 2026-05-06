@@ -31,7 +31,11 @@ from app.api.schemas.world import (
     GymDefenderModel,
     GymModel,
     MapObjectModel,
+    MerchantItemModel,
+    MerchantModel,
     NpcModel,
+    PurchaseLineResultModel,
+    PurchaseReceiptModel,
     SpawnAreaItemModel,
     SpawnAreaModel,
     SpawnAreaPokemonModel,
@@ -43,6 +47,7 @@ from app.domain.characters.player import Player
 from app.domain.characters.wild_pokemon import WildPokemon
 from app.domain.items.inventory import Inventory
 from app.domain.items.item import Item
+from app.domain.items.merchant import Merchant
 from app.domain.quests.quest import Quest
 from app.domain.world.item_spawn_area import ItemSpawnArea
 from app.domain.world.world_item_spawn import WorldItemSpawn
@@ -189,6 +194,53 @@ def npc_to_model(npc: NonPlayerCharacter) -> NpcModel:
         location=geo_to_model(npc.location),
         dialogue=npc.dialogue,
         metadata=npc.metadata,
+        merchant_id=npc.merchant_id,
+    )
+
+
+def merchant_to_model(merchant: Merchant) -> MerchantModel:
+    items: list[MerchantItemModel] = []
+    for entry in merchant.items:
+        try:
+            effective_price = entry.effective_price
+        except ValueError:
+            # Item lost its buy_price after being added with no override.
+            # Surface it as 0 so the admin can fix the configuration.
+            effective_price = 0
+        items.append(
+            MerchantItemModel(
+                item_id=entry.item_id,
+                item_name=entry.item_name,
+                item_category=entry.item_category,
+                base_buy_price=entry.base_buy_price,
+                price_override=entry.price_override,
+                effective_price=effective_price,
+            )
+        )
+    return MerchantModel(
+        id=merchant.id,
+        name=merchant.name,
+        description=merchant.description,
+        items=items,
+    )
+
+
+def purchase_receipt_to_model(receipt) -> PurchaseReceiptModel:
+    return PurchaseReceiptModel(
+        npc_id=receipt.npc_id,
+        merchant_id=receipt.merchant_id,
+        lines=[
+            PurchaseLineResultModel(
+                item_id=line.item_id,
+                item_name=line.item_name,
+                quantity=line.quantity,
+                unit_price=line.unit_price,
+                line_total=line.line_total,
+            )
+            for line in receipt.lines
+        ],
+        total_cost=receipt.total_cost,
+        pokecoins_after=receipt.pokecoins_after,
     )
 
 

@@ -29,6 +29,49 @@ class NpcModel(BaseModel):
     location: GeoLocationModel
     dialogue: str | None
     metadata: dict
+    merchant_id: int | None = None
+
+
+class MerchantItemModel(BaseModel):
+    item_id: int
+    item_name: str
+    item_category: str
+    base_buy_price: int | None
+    price_override: int | None
+    effective_price: int
+
+
+class MerchantModel(BaseModel):
+    id: int
+    name: str
+    description: str | None
+    items: list[MerchantItemModel]
+
+
+class PurchaseLineRequest(BaseModel):
+    item_id: int = Field(ge=1)
+    quantity: int = Field(ge=1)
+
+
+class PurchaseRequest(BaseModel):
+    location: GeoLocationModel
+    lines: list[PurchaseLineRequest] = Field(min_length=1)
+
+
+class PurchaseLineResultModel(BaseModel):
+    item_id: int
+    item_name: str
+    quantity: int
+    unit_price: int
+    line_total: int
+
+
+class PurchaseReceiptModel(BaseModel):
+    npc_id: int
+    merchant_id: int
+    lines: list[PurchaseLineResultModel]
+    total_cost: int
+    pokecoins_after: int
 
 
 class SpawnAreaPokemonModel(BaseModel):

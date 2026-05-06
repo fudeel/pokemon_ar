@@ -148,6 +148,24 @@ CREATE TABLE IF NOT EXISTS map_objects (
 
 CREATE INDEX IF NOT EXISTS idx_map_objects_geo ON map_objects(lat, lng);
 
+CREATE TABLE IF NOT EXISTS merchants (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL UNIQUE,
+    description TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    created_by_admin_id INTEGER,
+    FOREIGN KEY (created_by_admin_id) REFERENCES admins(id) ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS merchant_items (
+    merchant_id INTEGER NOT NULL,
+    item_id INTEGER NOT NULL,
+    price_override INTEGER CHECK (price_override IS NULL OR price_override >= 0),
+    PRIMARY KEY (merchant_id, item_id),
+    FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE CASCADE,
+    FOREIGN KEY (item_id) REFERENCES items(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS npcs (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -156,9 +174,11 @@ CREATE TABLE IF NOT EXISTS npcs (
     lng REAL NOT NULL,
     dialogue TEXT,
     metadata TEXT,
+    merchant_id INTEGER,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     created_by_admin_id INTEGER,
-    FOREIGN KEY (created_by_admin_id) REFERENCES admins(id) ON DELETE SET NULL
+    FOREIGN KEY (created_by_admin_id) REFERENCES admins(id) ON DELETE SET NULL,
+    FOREIGN KEY (merchant_id) REFERENCES merchants(id) ON DELETE SET NULL
 );
 
 CREATE INDEX IF NOT EXISTS idx_npcs_geo ON npcs(lat, lng);

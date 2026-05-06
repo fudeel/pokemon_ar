@@ -47,6 +47,7 @@ class Database:
             ("spawn_areas", "polygon_points", "TEXT"),
             ("event_areas", "polygon_points", "TEXT"),
             ("item_spawn_areas", "polygon_points", "TEXT"),
+            ("npcs", "merchant_id", "INTEGER REFERENCES merchants(id) ON DELETE SET NULL"),
         )
         for table, column, decl in additions:
             cols = {row["name"] for row in conn.execute(f"PRAGMA table_info({table})").fetchall()}

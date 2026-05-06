@@ -58,6 +58,31 @@ class NpcCreateRequest(BaseModel):
     location: GeoLocationModel
     dialogue: str | None = None
     metadata: dict | None = None
+    merchant_id: int | None = Field(default=None, ge=1)
+
+
+class NpcAssignMerchantRequest(BaseModel):
+    merchant_id: int | None = Field(default=None, ge=1)
+
+
+class MerchantItemEntryRequest(BaseModel):
+    item_id: int = Field(ge=1)
+    price_override: int | None = Field(default=None, ge=0)
+
+
+class MerchantCreateRequest(BaseModel):
+    name: str = Field(min_length=1)
+    description: str | None = None
+    items: list[MerchantItemEntryRequest] = []
+
+
+class MerchantUpdateRequest(BaseModel):
+    name: str = Field(min_length=1)
+    description: str | None = None
+
+
+class MerchantSetItemsRequest(BaseModel):
+    items: list[MerchantItemEntryRequest]
 
 
 class SpawnAreaPokemonEntry(BaseModel):

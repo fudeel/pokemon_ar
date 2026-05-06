@@ -41,6 +41,23 @@ export interface Npc {
   location: GeoLocation
   dialogue: string | null
   metadata: Record<string, unknown>
+  merchant_id: number | null
+}
+
+export interface MerchantItem {
+  item_id: number
+  item_name: string
+  item_category: string
+  base_buy_price: number | null
+  price_override: number | null
+  effective_price: number
+}
+
+export interface Merchant {
+  id: number
+  name: string
+  description: string | null
+  items: MerchantItem[]
 }
 
 export interface SpawnAreaPokemon {

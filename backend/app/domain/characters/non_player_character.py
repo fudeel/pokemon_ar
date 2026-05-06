@@ -28,11 +28,13 @@ class NonPlayerCharacter(Character):
         location: GeoLocation,
         dialogue: str | None,
         metadata: dict | None,
+        merchant_id: int | None = None,
     ) -> None:
         super().__init__(npc_id, name, location)
         self._role = role
         self._dialogue = dialogue
         self._metadata = metadata or {}
+        self._merchant_id = merchant_id
 
     @property
     def kind(self) -> str:
@@ -53,3 +55,7 @@ class NonPlayerCharacter(Character):
     @property
     def metadata(self) -> dict:
         return dict(self._metadata)
+
+    @property
+    def merchant_id(self) -> int | None:
+        return self._merchant_id

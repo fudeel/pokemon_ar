@@ -23,6 +23,7 @@ import {
   listItemSpawnAreas,
   listItems,
   listMapObjects,
+  listMerchants,
   listNpcs,
   listRarePokemon,
   listSpawnAreas,
@@ -37,6 +38,7 @@ import type {
   Item,
   ItemSpawnArea,
   MapObject,
+  Merchant,
   Npc,
   PokemonSpecies,
   RareWildPokemon,
@@ -75,6 +77,7 @@ export default function MapPage() {
   const [itemSpawnAreas, setItemSpawnAreas] = useState<ItemSpawnArea[]>([])
   const [species, setSpecies] = useState<PokemonSpecies[]>([])
   const [items, setItems] = useState<Item[]>([])
+  const [merchants, setMerchants] = useState<Merchant[]>([])
 
   const [activeType, setActiveType] = useState<EntityType | null>(null)
   const [drawingPolygon, setDrawingPolygon] = useState<GeoLocation[]>([])
@@ -83,7 +86,7 @@ export default function MapPage() {
   const [editingItemSpawnArea, setEditingItemSpawnArea] = useState<ItemSpawnArea | null>(null)
 
   const loadAll = useCallback(async () => {
-    const [mos, npcList, sas, eas, gymList, rares, wisps, isas, sp, itemList] = await Promise.all([
+    const [mos, npcList, sas, eas, gymList, rares, wisps, isas, sp, itemList, merchantList] = await Promise.all([
       listMapObjects(),
       listNpcs(),
       listSpawnAreas(),
@@ -94,6 +97,7 @@ export default function MapPage() {
       listItemSpawnAreas(),
       listSpecies(),
       listItems(),
+      listMerchants(),
     ])
     setMapObjects(mos)
     setNpcs(npcList)
@@ -105,6 +109,7 @@ export default function MapPage() {
     setItemSpawnAreas(isas)
     setSpecies(sp)
     setItems(itemList)
+    setMerchants(merchantList)
   }, [])
 
   useEffect(() => {
@@ -279,6 +284,7 @@ export default function MapPage() {
           coords={{ latitude: placement.latitude, longitude: placement.longitude }}
           species={species}
           items={items}
+          merchants={merchants}
           onCreated={handleEntityCreated}
           onClose={handlePlacementClose}
         />
@@ -290,6 +296,7 @@ export default function MapPage() {
           polygon={placement.polygon}
           species={species}
           items={items}
+          merchants={merchants}
           onCreated={handleEntityCreated}
           onClose={handlePlacementClose}
         />

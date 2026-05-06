@@ -11,6 +11,7 @@ from app.api.presenters import (
     item_spawn_area_to_model,
     item_to_model,
     map_object_to_model,
+    merchant_to_model,
     npc_to_model,
     quest_to_model,
     spawn_area_to_model,
@@ -27,7 +28,11 @@ from app.api.schemas.admin import (
     ItemUpsertRequest,
     LearnableMoveModel,
     MapObjectCreateRequest,
+    MerchantCreateRequest,
+    MerchantSetItemsRequest,
+    MerchantUpdateRequest,
     MoveUpsertRequest,
+    NpcAssignMerchantRequest,
     NpcCreateRequest,
     QuestModel,
     QuestUpsertRequest,
@@ -40,7 +45,7 @@ from app.api.schemas.admin import (
     SpeciesUpsertRequest,
     WorldItemSpawnCreateRequest,
 )
-from app.api.schemas.world import ItemSpawnAreaModel, WorldItemSpawnModel
+from app.api.schemas.world import ItemSpawnAreaModel, MerchantModel, WorldItemSpawnModel
 from app.api.schemas.auth import (
     AdminLoginRequest,
     AdminRegistrationRequest,
@@ -337,7 +342,18 @@ def create_npc(
         location=_to_geo(payload.location),
         dialogue=payload.dialogue,
         metadata=payload.metadata,
+        merchant_id=payload.merchant_id,
     )
+    return npc_to_model(npc)
+
+
+@router.put("/npcs/{npc_id}/merchant", response_model=NpcModel)
+def assign_npc_merchant(
+    npc_id: int,
+    payload: NpcAssignMerchantRequest,
+    container: Container = Depends(container_dep),
+) -> NpcModel:
+    npc = container.admin_service.assign_npc_merchant(npc_id, payload.merchant_id)
     return npc_to_model(npc)
 
 
@@ -349,6 +365,60 @@ def delete_npc(npc_id: int, container: Container = Depends(container_dep)) -> No
 @router.get("/npcs", response_model=list[NpcModel])
 def list_npcs(container: Container = Depends(container_dep)) -> list[NpcModel]:
     return [npc_to_model(n) for n in container.admin_service.list_npcs()]
+
+
+@router.post("/merchants", response_model=MerchantModel, status_code=201)
+def create_merchant(
+    payload: MerchantCreateRequest,
+    admin_id: int = Depends(current_admin_id),
+    container: Container = Depends(container_dep),
+) -> MerchantModel:
+    merchant = container.admin_service.create_merchant(
+        admin_id=admin_id,
+        name=payload.name,
+        description=payload.description,
+        items=[(e.item_id, e.price_override) for e in payload.items],
+    )
+    return merchant_to_model(merchant)
+
+
+@router.put("/merchants/{merchant_id}", response_model=MerchantModel)
+def update_merchant(
+    merchant_id: int,
+    payload: MerchantUpdateRequest,
+    container: Container = Depends(container_dep),
+) -> MerchantModel:
+    merchant = container.admin_service.update_merchant(
+        merchant_id=merchant_id, name=payload.name, description=payload.description
+    )
+    return merchant_to_model(merchant)
+
+
+@router.put("/merchants/{merchant_id}/items", response_model=MerchantModel)
+def set_merchant_items(
+    merchant_id: int,
+    payload: MerchantSetItemsRequest,
+    container: Container = Depends(container_dep),
+) -> MerchantModel:
+    merchant = container.admin_service.set_merchant_items(
+        merchant_id, [(e.item_id, e.price_override) for e in payload.items]
+    )
+    return merchant_to_model(merchant)
+
+
+@router.delete("/merchants/{merchant_id}", status_code=204)
+def delete_merchant(merchant_id: int, container: Container = Depends(container_dep)) -> None:
+    container.admin_service.delete_merchant(merchant_id)
+
+
+@router.get("/merchants", response_model=list[MerchantModel])
+def list_merchants(container: Container = Depends(container_dep)) -> list[MerchantModel]:
+    return [merchant_to_model(m) for m in container.admin_service.list_merchants()]
+
+
+@router.get("/merchants/{merchant_id}", response_model=MerchantModel)
+def get_merchant(merchant_id: int, container: Container = Depends(container_dep)) -> MerchantModel:
+    return merchant_to_model(container.admin_service.get_merchant(merchant_id))
 
 
 @router.post("/spawn-areas", response_model=SpawnAreaModel, status_code=201)

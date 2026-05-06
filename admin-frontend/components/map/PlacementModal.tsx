@@ -18,6 +18,7 @@ import type {
   Item,
   ItemSpawnArea,
   MapObject,
+  Merchant,
   Npc,
   PokemonSpecies,
   RareWildPokemon,
@@ -38,6 +39,7 @@ interface PlacementModalProps {
   polygon?: GeoLocation[]
   species: PokemonSpecies[]
   items: Item[]
+  merchants: Merchant[]
   onCreated: (type: EntityType, entity: unknown) => void
   onClose: () => void
 }
@@ -58,7 +60,7 @@ const MODAL_WIDTHS: Partial<Record<EntityType, 'sm' | 'md' | 'lg'>> = {
   item_spawn_area: 'md',
 }
 
-export function PlacementModal({ type, coords, polygon, species, items, onCreated, onClose }: PlacementModalProps) {
+export function PlacementModal({ type, coords, polygon, species, items, merchants, onCreated, onClose }: PlacementModalProps) {
   const handleCreated = (entity: unknown) => {
     onCreated(type, entity)
     onClose()
@@ -83,6 +85,7 @@ export function PlacementModal({ type, coords, polygon, species, items, onCreate
         <NpcForm
           latitude={latitude}
           longitude={longitude}
+          merchants={merchants}
           onCreated={(npc: Npc) => handleCreated(npc)}
           onCancel={onClose}
         />
