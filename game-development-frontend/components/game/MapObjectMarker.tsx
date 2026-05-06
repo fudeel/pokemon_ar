@@ -27,9 +27,17 @@ const KIND_COLOR: Record<string, string> = {
 
 interface MapObjectMarkerProps {
   mapObject: MapObject
+  isInHealRange?: boolean
+  canHeal?: boolean
+  onHeal?: () => void
 }
 
-export default function MapObjectMarker({ mapObject }: MapObjectMarkerProps) {
+export default function MapObjectMarker({
+  mapObject,
+  isInHealRange = false,
+  canHeal = false,
+  onHeal,
+}: MapObjectMarkerProps) {
   const color = KIND_COLOR[mapObject.kind] ?? '#94a3b8'
   const glyph = KIND_ICON[mapObject.kind] ?? '📍'
 
@@ -54,6 +62,8 @@ export default function MapObjectMarker({ mapObject }: MapObjectMarkerProps) {
     [color, glyph],
   )
 
+  const isPokemonCenter = mapObject.kind === 'pokemon_center'
+
   return (
     <Marker
       position={[mapObject.location.latitude, mapObject.location.longitude]}
@@ -64,6 +74,22 @@ export default function MapObjectMarker({ mapObject }: MapObjectMarkerProps) {
         <p className="text-xs text-slate-500 capitalize">
           {mapObject.kind.replace('_', ' ')}
         </p>
+        {isPokemonCenter && (
+          <div className="mt-2 text-center">
+            {!isInHealRange ? (
+              <p className="text-xs text-slate-400">Get closer to heal your party</p>
+            ) : !canHeal ? (
+              <p className="text-xs text-slate-400">Your party is already at full HP</p>
+            ) : (
+              <button
+                onClick={onHeal}
+                className="bg-red-500 text-white font-bold px-4 py-1.5 rounded-lg text-sm hover:bg-red-400"
+              >
+                Heal Party
+              </button>
+            )}
+          </div>
+        )}
       </Popup>
     </Marker>
   )

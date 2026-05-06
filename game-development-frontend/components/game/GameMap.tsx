@@ -29,14 +29,17 @@ import type {
 const REVEAL_RADIUS_METERS = 80
 const CAPTURE_RADIUS_METERS = 30
 const ITEM_PICKUP_RADIUS_METERS = 15
+const HEAL_RADIUS_METERS = 25
 
 interface GameMapProps {
   playerPosition: PlayerPosition
   snapshot: WorldSnapshotResponse | null
   spawnedPokemon: SpawnedPokemon[]
+  partyNeedsHealing: boolean
   onRevealPokemon: (clientId: string) => void
   onEncounter: (encounter: ActiveEncounter) => void
   onPickupItem: (item: WorldItemSpawn) => void
+  onHealAtPokecenter: () => void
 }
 
 function MapFollower({ position }: { position: PlayerPosition }) {
@@ -62,9 +65,11 @@ export default function GameMap({
   playerPosition,
   snapshot,
   spawnedPokemon,
+  partyNeedsHealing,
   onRevealPokemon,
   onEncounter,
   onPickupItem,
+  onHealAtPokecenter,
 }: GameMapProps) {
   const playerGeo = { latitude: playerPosition.latitude, longitude: playerPosition.longitude }
 
@@ -76,6 +81,9 @@ export default function GameMap({
 
   const isInPickupRange = (lat: number, lng: number) =>
     distanceMeters(playerGeo, { latitude: lat, longitude: lng }) <= ITEM_PICKUP_RADIUS_METERS
+
+  const isInHealRange = (lat: number, lng: number) =>
+    distanceMeters(playerGeo, { latitude: lat, longitude: lng }) <= HEAL_RADIUS_METERS
 
   return (
     <MapContainer
@@ -103,9 +111,22 @@ export default function GameMap({
       ))}
 
       {/* Static map objects */}
-      {snapshot?.map_objects.map((obj) => (
-        <MapObjectMarker key={`map-${obj.id}`} mapObject={obj} />
-      ))}
+      {snapshot?.map_objects.map((obj) => {
+        const isPokemonCenter = obj.kind === 'pokemon_center'
+        return (
+          <MapObjectMarker
+            key={`map-${obj.id}`}
+            mapObject={obj}
+            isInHealRange={
+              isPokemonCenter
+                ? isInHealRange(obj.location.latitude, obj.location.longitude)
+                : false
+            }
+            canHeal={isPokemonCenter && partyNeedsHealing}
+            onHeal={isPokemonCenter ? onHealAtPokecenter : undefined}
+          />
+        )
+      })}
 
       {/* NPCs */}
       {snapshot?.npcs.map((npc) => (

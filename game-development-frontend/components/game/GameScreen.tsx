@@ -32,7 +32,13 @@ export default function GameScreen({
   position,
   gpsUnavailable,
 }: GameScreenProps) {
-  const { profile, refreshProfile, hasUsablePokemon } = usePlayer()
+  const {
+    profile,
+    refreshProfile,
+    hasUsablePokemon,
+    healParty,
+    partyNeedsHealing,
+  } = usePlayer()
   const {
     snapshot,
     spawnedPokemon,
@@ -47,7 +53,16 @@ export default function GameScreen({
   const [activeEncounter, setActiveEncounter] = useState<ActiveEncounter | null>(null)
   const [pickupError, setPickupError] = useState<string | null>(null)
   const [partyExhaustedMessage, setPartyExhaustedMessage] = useState<string | null>(null)
+  const [healMessage, setHealMessage] = useState<string | null>(null)
   const lastFetchedRef = useRef<number>(0)
+
+  const handleHealAtPokecenter = useCallback(() => {
+    if (!partyNeedsHealing) return
+    healParty()
+    setPartyExhaustedMessage(null)
+    setHealMessage('Your Pokémon are now full of health!')
+    setTimeout(() => setHealMessage(null), 3_000)
+  }, [healParty, partyNeedsHealing])
 
   const handleEncounter = useCallback(
     (encounter: ActiveEncounter) => {
@@ -105,9 +120,11 @@ export default function GameScreen({
         playerPosition={position}
         snapshot={snapshot}
         spawnedPokemon={spawnedPokemon}
+        partyNeedsHealing={partyNeedsHealing}
         onRevealPokemon={revealPokemon}
         onEncounter={handleEncounter}
         onPickupItem={handlePickupItem}
+        onHealAtPokecenter={handleHealAtPokecenter}
       />
 
       <GameHud
@@ -129,6 +146,15 @@ export default function GameScreen({
                   : undefined
             }
           />
+        </div>
+      )}
+
+      {healMessage && (
+        <div className="absolute bottom-20 left-3 right-3 z-10">
+          <div className="flex items-start gap-3 bg-emerald-900/80 border border-emerald-500 rounded-lg px-4 py-3 text-emerald-100">
+            <span className="text-emerald-300 text-lg leading-none mt-0.5">✓</span>
+            <p className="flex-1 text-sm">{healMessage}</p>
+          </div>
         </div>
       )}
 

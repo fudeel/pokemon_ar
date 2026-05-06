@@ -34,6 +34,8 @@ interface PlayerContextValue {
   healParty: () => void
   /** True when at least one pokemon in the party has HP > 0. */
   hasUsablePokemon: boolean
+  /** True when at least one party pokemon has HP below its max. */
+  partyNeedsHealing: boolean
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null)
@@ -79,6 +81,14 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   const hasUsablePokemon = useMemo(
     () => (profile?.pokemon ?? []).some((p) => p.current_hp > 0),
+    [profile],
+  )
+
+  const partyNeedsHealing = useMemo(
+    () =>
+      (profile?.pokemon ?? []).some(
+        (p) => p.current_hp < p.effective_stats.max_hp,
+      ),
     [profile],
   )
 
@@ -211,6 +221,7 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
         setPokemonHp,
         healParty,
         hasUsablePokemon,
+        partyNeedsHealing,
       }}
     >
       {children}
