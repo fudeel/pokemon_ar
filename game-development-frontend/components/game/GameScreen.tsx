@@ -32,7 +32,7 @@ export default function GameScreen({
   position,
   gpsUnavailable,
 }: GameScreenProps) {
-  const { profile, refreshProfile } = usePlayer()
+  const { profile, refreshProfile, hasUsablePokemon } = usePlayer()
   const {
     snapshot,
     spawnedPokemon,
@@ -46,7 +46,21 @@ export default function GameScreen({
 
   const [activeEncounter, setActiveEncounter] = useState<ActiveEncounter | null>(null)
   const [pickupError, setPickupError] = useState<string | null>(null)
+  const [partyExhaustedMessage, setPartyExhaustedMessage] = useState<string | null>(null)
   const lastFetchedRef = useRef<number>(0)
+
+  const handleEncounter = useCallback(
+    (encounter: ActiveEncounter) => {
+      if (!hasUsablePokemon) {
+        setPartyExhaustedMessage(
+          'All your Pokémon are exhausted. Go to a Pokécenter to heal them first.',
+        )
+        return
+      }
+      setActiveEncounter(encounter)
+    },
+    [hasUsablePokemon],
+  )
 
   useEffect(() => {
     if (!position) return
@@ -92,7 +106,7 @@ export default function GameScreen({
         snapshot={snapshot}
         spawnedPokemon={spawnedPokemon}
         onRevealPokemon={revealPokemon}
-        onEncounter={setActiveEncounter}
+        onEncounter={handleEncounter}
         onPickupItem={handlePickupItem}
       />
 
@@ -103,11 +117,17 @@ export default function GameScreen({
         gpsUnavailable={gpsUnavailable}
       />
 
-      {(error || pickupError) && (
+      {(error || pickupError || partyExhaustedMessage) && (
         <div className="absolute bottom-20 left-3 right-3 z-10">
           <ErrorMessage
-            message={pickupError ?? error ?? ''}
-            onDismiss={pickupError ? () => setPickupError(null) : undefined}
+            message={partyExhaustedMessage ?? pickupError ?? error ?? ''}
+            onDismiss={
+              partyExhaustedMessage
+                ? () => setPartyExhaustedMessage(null)
+                : pickupError
+                  ? () => setPickupError(null)
+                  : undefined
+            }
           />
         </div>
       )}

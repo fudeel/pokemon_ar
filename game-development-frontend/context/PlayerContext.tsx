@@ -7,6 +7,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useMemo,
   useState,
   type ReactNode,
 } from 'react'
@@ -27,24 +28,59 @@ interface PlayerContextValue {
   login: (username: string) => Promise<void>
   updateSession: (patch: Partial<PlayerSession>) => void
   refreshProfile: () => Promise<void>
+  /** Persist a local HP value for a given pokemon (battle damage, fainting). */
+  setPokemonHp: (pokemonId: number, hp: number) => void
+  /** Restore every party pokemon to full HP (used by Pokécenter). */
+  healParty: () => void
+  /** True when at least one pokemon in the party has HP > 0. */
+  hasUsablePokemon: boolean
 }
 
 const PlayerContext = createContext<PlayerContextValue | null>(null)
 
 export function PlayerProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<PlayerSession | null>(null)
-  const [profile, setProfile] = useState<PlayerProfile | null>(null)
+  const [rawProfile, setRawProfile] = useState<PlayerProfile | null>(null)
+  const [hpOverrides, setHpOverrides] = useState<Record<number, number>>({})
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
   const refreshProfile = useCallback(async () => {
     try {
       const p = await apiClient.get<PlayerProfile>('/me/profile')
-      setProfile(p)
+      setRawProfile(p)
     } catch {
       // profile fetch failure is non-fatal
     }
   }, [])
+
+  const setPokemonHp = useCallback((pokemonId: number, hp: number) => {
+    setHpOverrides((prev) => {
+      if (prev[pokemonId] === hp) return prev
+      return { ...prev, [pokemonId]: hp }
+    })
+  }, [])
+
+  const healParty = useCallback(() => {
+    setHpOverrides({})
+  }, [])
+
+  const profile = useMemo<PlayerProfile | null>(() => {
+    if (!rawProfile) return null
+    return {
+      ...rawProfile,
+      pokemon: rawProfile.pokemon.map((p) =>
+        hpOverrides[p.id] !== undefined
+          ? { ...p, current_hp: Math.max(0, Math.min(p.effective_stats.max_hp, hpOverrides[p.id])) }
+          : p,
+      ),
+    }
+  }, [rawProfile, hpOverrides])
+
+  const hasUsablePokemon = useMemo(
+    () => (profile?.pokemon ?? []).some((p) => p.current_hp > 0),
+    [profile],
+  )
 
   const updateSession = useCallback((patch: Partial<PlayerSession>) => {
     setSession((prev) => {
@@ -164,7 +200,18 @@ export function PlayerProvider({ children }: { children: ReactNode }) {
 
   return (
     <PlayerContext.Provider
-      value={{ session, profile, isLoading, error, login, updateSession, refreshProfile }}
+      value={{
+        session,
+        profile,
+        isLoading,
+        error,
+        login,
+        updateSession,
+        refreshProfile,
+        setPokemonHp,
+        healParty,
+        hasUsablePokemon,
+      }}
     >
       {children}
     </PlayerContext.Provider>

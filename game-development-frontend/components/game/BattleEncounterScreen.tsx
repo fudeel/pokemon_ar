@@ -11,6 +11,7 @@ import BattleStage from './battle/BattleStage'
 import BattleTransition from './battle/BattleTransition'
 
 import { captureApi } from '@/lib/api/capture'
+import { usePlayer } from '@/context/PlayerContext'
 import {
   beginBattle,
   executeTurn,
@@ -41,8 +42,12 @@ export default function BattleEncounterScreen({
   profile,
   onClose,
 }: BattleEncounterScreenProps) {
-  const activePokemon = profile?.pokemon[0] ?? null
+  const { setPokemonHp } = usePlayer()
   const party = useMemo(() => profile?.pokemon.slice(0, 6) ?? [], [profile?.pokemon])
+  const activePokemon = useMemo(
+    () => party.find((p) => p.current_hp > 0) ?? null,
+    [party],
+  )
   const bag = useMemo(
     () => compactInventory(profile?.inventory ?? []),
     [profile?.inventory],
@@ -67,6 +72,13 @@ export default function BattleEncounterScreen({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [battleState?.phase])
+
+  // Persist the active pokemon's HP locally so damage carries over between
+  // encounters (and fainted pokemon stay fainted until a Pokécenter heal).
+  useEffect(() => {
+    if (!battleState) return
+    setPokemonHp(battleState.activePokemonId, battleState.playerHp)
+  }, [battleState?.activePokemonId, battleState?.playerHp, setPokemonHp])
 
   // When the active pokemon faints, force party selection or end in defeat
   useEffect(() => {
