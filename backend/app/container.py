@@ -25,6 +25,7 @@ from app.repositories.wallet_transaction_repository import WalletTransactionRepo
 from app.repositories.wild_pokemon_repository import WildPokemonRepository
 from app.repositories.world_item_spawn_repository import WorldItemSpawnRepository
 from app.services.admin_service import AdminService
+from app.services.admin_user_service import AdminUserService
 from app.services.auth_service import AuthService
 from app.services.capture_service import CaptureService
 from app.services.merchant_service import MerchantService
@@ -132,6 +133,14 @@ class Container:
         self.wallet_service = WalletService(
             player_repository=self.player_repository,
             wallet_transaction_repository=self.wallet_transaction_repository,
+        )
+        self.admin_user_service = AdminUserService(
+            player_repository=self.player_repository,
+            instance_repository=self.instance_repository,
+            inventory_repository=self.inventory_repository,
+            wallet_transaction_repository=self.wallet_transaction_repository,
+            wallet_service=self.wallet_service,
+            auth_service=self.auth_service,
         )
         self.merchant_service = MerchantService(
             merchant_repository=self.merchant_repository,

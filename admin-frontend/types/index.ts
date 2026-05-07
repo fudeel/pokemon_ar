@@ -244,6 +244,98 @@ export interface AdminToken {
   expires_at: string
 }
 
+export interface PlayerInventorySlot {
+  item_id: number
+  item_name: string
+  category: string
+  quantity: number
+}
+
+export interface PlayerSummary {
+  id: number
+  username: string
+  email: string
+  level: number
+  pokecoins: number
+  has_chosen_starter: boolean
+  last_seen_at: string | null
+  created_at: string
+}
+
+export interface PlayerListPage {
+  items: PlayerSummary[]
+  total: number
+  limit: number
+  offset: number
+}
+
+export interface PlayerProfile {
+  id: number
+  username: string
+  email: string
+  level: number
+  experience: number
+  pokecoins: number
+  has_chosen_starter: boolean
+  location: GeoLocation | null
+  last_seen_at: string | null
+  created_at: string
+}
+
+export interface WalletTransactionRecord {
+  id: number
+  amount: number
+  transaction_type: string
+  reference_id: number | null
+  notes: string | null
+  balance_after: number
+  created_at: string
+}
+
+export interface PokemonInstanceSummary {
+  id: number
+  species: PokemonSpecies
+  owner_player_id: number | null
+  nickname: string | null
+  level: number
+  experience: number
+  current_hp: number
+  effective_stats: {
+    max_hp: number
+    attack: number
+    defense: number
+    special_attack: number
+    special_defense: number
+    speed: number
+  }
+}
+
+export interface PlayerDetail {
+  player: PlayerProfile
+  pokemon: PokemonInstanceSummary[]
+  inventory: PlayerInventorySlot[]
+  recent_transactions: WalletTransactionRecord[]
+}
+
+export interface PlayerUpdatePayload {
+  username: string
+  email: string
+  level: number
+  experience: number
+  has_chosen_starter: boolean
+  location: GeoLocation | null
+}
+
+export interface PokecoinsAdjustPayload {
+  delta?: number | null
+  set_to?: number | null
+  notes?: string | null
+}
+
+export interface PasswordResetPayload {
+  new_password: string
+}
+
 export type EntityType =
   | 'map_object'
   | 'npc'

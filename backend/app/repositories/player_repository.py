@@ -97,6 +97,107 @@ class PlayerRepository(BaseRepository):
                 (amount, new_level, player_id),
             )
 
+    def count(self, *, search: str | None = None) -> int:
+        with self.db.connection() as conn:
+            if search:
+                pattern = f"%{search}%"
+                row = conn.execute(
+                    "SELECT COUNT(*) AS total FROM players WHERE username LIKE ? OR email LIKE ?",
+                    (pattern, pattern),
+                ).fetchone()
+            else:
+                row = conn.execute("SELECT COUNT(*) AS total FROM players").fetchone()
+        return int(row["total"])
+
+    def list_paginated(
+        self,
+        *,
+        limit: int,
+        offset: int,
+        search: str | None = None,
+    ) -> list[Player]:
+        with self.db.connection() as conn:
+            if search:
+                pattern = f"%{search}%"
+                rows = conn.execute(
+                    """
+                    SELECT * FROM players
+                    WHERE username LIKE ? OR email LIKE ?
+                    ORDER BY id ASC
+                    LIMIT ? OFFSET ?
+                    """,
+                    (pattern, pattern, limit, offset),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM players ORDER BY id ASC LIMIT ? OFFSET ?",
+                    (limit, offset),
+                ).fetchall()
+        return [self._hydrate(row) for row in rows]
+
+    def update_profile(
+        self,
+        player_id: int,
+        *,
+        username: str,
+        email: str,
+        level: int,
+        experience: int,
+        has_chosen_starter: bool,
+        location: GeoLocation | None,
+    ) -> Player:
+        try:
+            with self.db.connection() as conn:
+                cursor = conn.execute(
+                    """
+                    UPDATE players
+                    SET username = ?,
+                        email = ?,
+                        level = ?,
+                        experience = ?,
+                        has_chosen_starter = ?,
+                        current_lat = ?,
+                        current_lng = ?
+                    WHERE id = ?
+                    """,
+                    (
+                        username,
+                        email,
+                        level,
+                        experience,
+                        1 if has_chosen_starter else 0,
+                        location.latitude if location else None,
+                        location.longitude if location else None,
+                        player_id,
+                    ),
+                )
+        except sqlite3.IntegrityError as exc:
+            raise AlreadyExistsError(f"username or email already taken: {exc}") from exc
+        if cursor.rowcount == 0:
+            raise NotFoundError(f"player {player_id} not found")
+        return self.get_by_id(player_id)
+
+    def set_password(
+        self,
+        player_id: int,
+        *,
+        password_hash: str,
+        password_salt: str,
+    ) -> None:
+        with self.db.connection() as conn:
+            cursor = conn.execute(
+                "UPDATE players SET password_hash = ?, password_salt = ? WHERE id = ?",
+                (password_hash, password_salt, player_id),
+            )
+        if cursor.rowcount == 0:
+            raise NotFoundError(f"player {player_id} not found")
+
+    def delete(self, player_id: int) -> None:
+        with self.db.connection() as conn:
+            cursor = conn.execute("DELETE FROM players WHERE id = ?", (player_id,))
+        if cursor.rowcount == 0:
+            raise NotFoundError(f"player {player_id} not found")
+
     def _hydrate(self, row: sqlite3.Row) -> Player:
         location: GeoLocation | None = None
         if row["current_lat"] is not None and row["current_lng"] is not None:

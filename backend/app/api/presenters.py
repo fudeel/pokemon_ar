@@ -21,6 +21,11 @@ from app.api.schemas.admin import (
     QuestObjectiveModel,
     QuestRewardModel,
 )
+from app.api.schemas.admin_users import (
+    AdminPlayerDetailResponse,
+    AdminPlayerListResponse,
+    AdminPlayerSummaryModel,
+)
 from app.api.schemas.wallet import WalletTransactionModel
 from app.api.schemas.world import (
     ItemSpawnAreaItemModel,
@@ -63,6 +68,7 @@ from app.domain.world.geo_location import GeoLocation
 from app.domain.world.gym import Gym
 from app.domain.world.map_object import MapObject
 from app.domain.world.spawn_area import SpawnArea
+from app.services.admin_user_service import AdminPlayerDetail, AdminPlayerListPage
 from app.services.player_profile_service import PlayerProfile
 from app.services.world_service import WorldSnapshot
 
@@ -430,6 +436,39 @@ def wallet_transaction_to_model(transaction: WalletTransaction) -> WalletTransac
         notes=transaction.notes,
         balance_after=transaction.balance_after,
         created_at=transaction.created_at,
+    )
+
+
+def admin_player_summary_to_model(player: Player) -> AdminPlayerSummaryModel:
+    return AdminPlayerSummaryModel(
+        id=player.id,
+        username=player.username,
+        email=player.email,
+        level=player.level,
+        pokecoins=player.pokecoins,
+        has_chosen_starter=player.has_chosen_starter,
+        last_seen_at=player.last_seen_at,
+        created_at=player.created_at,
+    )
+
+
+def admin_player_list_to_response(page: AdminPlayerListPage) -> AdminPlayerListResponse:
+    return AdminPlayerListResponse(
+        items=[admin_player_summary_to_model(p) for p in page.items],
+        total=page.total,
+        limit=page.limit,
+        offset=page.offset,
+    )
+
+
+def admin_player_detail_to_response(detail: AdminPlayerDetail) -> AdminPlayerDetailResponse:
+    return AdminPlayerDetailResponse(
+        player=player_to_model(detail.player),
+        pokemon=[pokemon_instance_to_model(p) for p in detail.pokemon],
+        inventory=inventory_to_models(detail.inventory),
+        recent_transactions=[
+            wallet_transaction_to_model(t) for t in detail.recent_transactions
+        ],
     )
 
 

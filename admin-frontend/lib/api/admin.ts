@@ -12,6 +12,11 @@ import type {
   Merchant,
   Move,
   Npc,
+  PasswordResetPayload,
+  PlayerDetail,
+  PlayerListPage,
+  PlayerUpdatePayload,
+  PokecoinsAdjustPayload,
   PokemonSpecies,
   Quest,
   RareWildPokemon,
@@ -436,4 +441,50 @@ export function deleteItemSpawnArea(id: number): Promise<void> {
 
 export function createAdmin(username: string, password: string): Promise<{ id: number }> {
   return apiClient.post('/admin/admins', { username, password })
+}
+
+// ── Users (players) ───────────────────────────────────────────────────────────
+
+export interface ListUsersParams {
+  limit?: number
+  offset?: number
+  search?: string
+}
+
+export function listUsers(params: ListUsersParams = {}): Promise<PlayerListPage> {
+  const query = new URLSearchParams()
+  if (params.limit != null) query.set('limit', String(params.limit))
+  if (params.offset != null) query.set('offset', String(params.offset))
+  if (params.search) query.set('search', params.search)
+  const qs = query.toString()
+  return apiClient.get(`/admin/users${qs ? `?${qs}` : ''}`)
+}
+
+export function getUser(playerId: number): Promise<PlayerDetail> {
+  return apiClient.get(`/admin/users/${playerId}`)
+}
+
+export function updateUser(
+  playerId: number,
+  payload: PlayerUpdatePayload,
+): Promise<PlayerDetail> {
+  return apiClient.put(`/admin/users/${playerId}`, payload)
+}
+
+export function adjustUserPokecoins(
+  playerId: number,
+  payload: PokecoinsAdjustPayload,
+): Promise<PlayerDetail> {
+  return apiClient.put(`/admin/users/${playerId}/pokecoins`, payload)
+}
+
+export function resetUserPassword(
+  playerId: number,
+  payload: PasswordResetPayload,
+): Promise<void> {
+  return apiClient.put(`/admin/users/${playerId}/password`, payload)
+}
+
+export function deleteUser(playerId: number): Promise<void> {
+  return apiClient.delete(`/admin/users/${playerId}`)
 }

@@ -93,6 +93,14 @@ class AuthService:
     def admin_count(self) -> int:
         return self._admins.count()
 
+    def reset_player_password(self, player_id: int, new_password: str) -> None:
+        if not new_password or len(new_password) < 8:
+            raise ValueError("password must be at least 8 characters")
+        password_hash, password_salt = self._hasher.hash(new_password)
+        self._players.set_password(
+            player_id, password_hash=password_hash, password_salt=password_salt
+        )
+
     def _issue_player_token(self, player_id: int) -> IssuedToken:
         token = self._token_generator.new_token()
         expires_at = datetime.now(timezone.utc) + timedelta(seconds=self._player_lifetime)
