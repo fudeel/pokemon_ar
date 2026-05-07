@@ -20,6 +20,7 @@ import ItemSpawnAreaPolygon from './ItemSpawnAreaPolygon'
 import { distanceMeters } from '@/lib/spawner/GeoUtils'
 import type {
   ActiveEncounter,
+  Npc,
   PlayerPosition,
   SpawnedPokemon,
   WorldItemSpawn,
@@ -30,6 +31,7 @@ const REVEAL_RADIUS_METERS = 80
 const CAPTURE_RADIUS_METERS = 30
 const ITEM_PICKUP_RADIUS_METERS = 15
 const HEAL_RADIUS_METERS = 25
+const SHOP_RADIUS_METERS = 60
 
 interface GameMapProps {
   playerPosition: PlayerPosition
@@ -40,6 +42,7 @@ interface GameMapProps {
   onEncounter: (encounter: ActiveEncounter) => void
   onPickupItem: (item: WorldItemSpawn) => void
   onHealAtPokecenter: () => void
+  onOpenShop: (npc: Npc) => void
 }
 
 function MapFollower({ position }: { position: PlayerPosition }) {
@@ -70,6 +73,7 @@ export default function GameMap({
   onEncounter,
   onPickupItem,
   onHealAtPokecenter,
+  onOpenShop,
 }: GameMapProps) {
   const playerGeo = { latitude: playerPosition.latitude, longitude: playerPosition.longitude }
 
@@ -84,6 +88,9 @@ export default function GameMap({
 
   const isInHealRange = (lat: number, lng: number) =>
     distanceMeters(playerGeo, { latitude: lat, longitude: lng }) <= HEAL_RADIUS_METERS
+
+  const isInShopRange = (lat: number, lng: number) =>
+    distanceMeters(playerGeo, { latitude: lat, longitude: lng }) <= SHOP_RADIUS_METERS
 
   return (
     <MapContainer
@@ -130,7 +137,12 @@ export default function GameMap({
 
       {/* NPCs */}
       {snapshot?.npcs.map((npc) => (
-        <NpcMarker key={`npc-${npc.id}`} npc={npc} />
+        <NpcMarker
+          key={`npc-${npc.id}`}
+          npc={npc}
+          isInShopRange={isInShopRange(npc.location.latitude, npc.location.longitude)}
+          onOpenShop={onOpenShop}
+        />
       ))}
 
       {/* Gyms */}

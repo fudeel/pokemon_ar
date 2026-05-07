@@ -57,7 +57,7 @@ export default function GameHud({
 
       {/* Bottom WASD hint (keyboard mode only) */}
       {gpsUnavailable && (
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
+        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
           <div className="bg-slate-900/70 backdrop-blur border border-slate-700 rounded-xl px-4 py-2 flex items-center gap-3">
             <KbdHint keys={['W', 'A', 'S', 'D']} />
             <span className="text-slate-400 text-xs">Move</span>

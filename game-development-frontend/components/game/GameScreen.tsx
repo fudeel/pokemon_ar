@@ -11,10 +11,12 @@ import { playerApi } from '@/lib/api/player'
 
 import GameHud from './GameHud'
 import BattleEncounterScreen from './BattleEncounterScreen'
+import MerchantShopPanel from './merchant/MerchantShopPanel'
+import PlayerPanelLauncher from './player-panel/PlayerPanelLauncher'
 import LoadingScreen from '@/components/ui/LoadingScreen'
 import ErrorMessage from '@/components/ui/ErrorMessage'
 
-import type { ActiveEncounter, PlayerPosition, WorldItemSpawn } from '@/types'
+import type { ActiveEncounter, Npc, PlayerPosition, WorldItemSpawn } from '@/types'
 
 const GameMap = dynamic(() => import('./GameMap'), {
   ssr: false,
@@ -51,6 +53,7 @@ export default function GameScreen({
   } = useWorld()
 
   const [activeEncounter, setActiveEncounter] = useState<ActiveEncounter | null>(null)
+  const [activeMerchantNpc, setActiveMerchantNpc] = useState<Npc | null>(null)
   const [pickupError, setPickupError] = useState<string | null>(null)
   const [partyExhaustedMessage, setPartyExhaustedMessage] = useState<string | null>(null)
   const [healMessage, setHealMessage] = useState<string | null>(null)
@@ -125,6 +128,7 @@ export default function GameScreen({
         onEncounter={handleEncounter}
         onPickupItem={handlePickupItem}
         onHealAtPokecenter={handleHealAtPokecenter}
+        onOpenShop={setActiveMerchantNpc}
       />
 
       <GameHud
@@ -133,6 +137,8 @@ export default function GameScreen({
         isWorldLoading={isLoading}
         gpsUnavailable={gpsUnavailable}
       />
+
+      {profile && <PlayerPanelLauncher profile={profile} />}
 
       {(error || pickupError || partyExhaustedMessage) && (
         <div className="absolute bottom-20 left-3 right-3 z-10">
@@ -156,6 +162,14 @@ export default function GameScreen({
             <p className="flex-1 text-sm">{healMessage}</p>
           </div>
         </div>
+      )}
+
+      {activeMerchantNpc && (
+        <MerchantShopPanel
+          npc={activeMerchantNpc}
+          position={position}
+          onClose={() => setActiveMerchantNpc(null)}
+        />
       )}
 
       {activeEncounter && (

@@ -41,6 +41,44 @@ export interface Npc {
   location: GeoLocation
   dialogue: string | null
   metadata: Record<string, unknown>
+  merchant_id: number | null
+}
+
+export interface MerchantItem {
+  item_id: number
+  item_name: string
+  item_category: string
+  base_buy_price: number | null
+  price_override: number | null
+  effective_price: number
+}
+
+export interface Merchant {
+  id: number
+  name: string
+  description: string | null
+  items: MerchantItem[]
+}
+
+export interface PurchaseLineRequest {
+  item_id: number
+  quantity: number
+}
+
+export interface PurchaseLineResult {
+  item_id: number
+  item_name: string
+  quantity: number
+  unit_price: number
+  line_total: number
+}
+
+export interface PurchaseReceipt {
+  npc_id: number
+  merchant_id: number
+  lines: PurchaseLineResult[]
+  total_cost: number
+  pokecoins_after: number
 }
 
 export interface SpawnAreaPokemon {

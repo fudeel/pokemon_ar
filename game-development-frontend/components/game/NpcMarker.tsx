@@ -17,9 +17,15 @@ const ROLE_ICON: Record<string, string> = {
 
 interface NpcMarkerProps {
   npc: Npc
+  isInShopRange?: boolean
+  onOpenShop?: (npc: Npc) => void
 }
 
-export default function NpcMarker({ npc }: NpcMarkerProps) {
+export default function NpcMarker({
+  npc,
+  isInShopRange = false,
+  onOpenShop,
+}: NpcMarkerProps) {
   const icon = useMemo(
     () =>
       L.divIcon({
@@ -41,12 +47,31 @@ export default function NpcMarker({ npc }: NpcMarkerProps) {
     [npc.role],
   )
 
+  const isMerchant = npc.role === 'merchant' && npc.merchant_id !== null
+
   return (
     <Marker position={[npc.location.latitude, npc.location.longitude]} icon={icon}>
       <Popup>
         <p className="font-bold text-sm">{npc.name}</p>
         <p className="text-xs text-slate-500 capitalize">{npc.role}</p>
         {npc.dialogue && <p className="text-xs mt-1 italic">&ldquo;{npc.dialogue}&rdquo;</p>}
+        {isMerchant && (
+          <div className="mt-2 text-center">
+            {!isInShopRange ? (
+              <p className="text-xs text-slate-400">
+                Get closer to browse the shop
+              </p>
+            ) : (
+              <button
+                type="button"
+                onClick={() => onOpenShop?.(npc)}
+                className="bg-yellow-500 hover:bg-yellow-400 text-slate-900 font-bold px-4 py-1.5 rounded-lg text-sm"
+              >
+                Buy
+              </button>
+            )}
+          </div>
+        )}
       </Popup>
     </Marker>
   )
