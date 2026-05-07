@@ -129,6 +129,7 @@ interface GameMapProps {
   onClosePolygon: () => void
   onDeleteMapObject: (id: number) => void
   onDeleteNpc: (id: number) => void
+  onEditMerchantNpc: (npc: Npc) => void
   onEditSpawnArea: (area: SpawnArea) => void
   onDeleteSpawnArea: (id: number) => void
   onDeleteEventArea: (id: number) => void
@@ -148,6 +149,7 @@ export function GameMap({
   onClosePolygon,
   onDeleteMapObject,
   onDeleteNpc,
+  onEditMerchantNpc,
   onEditSpawnArea,
   onDeleteSpawnArea,
   onDeleteEventArea,
@@ -214,10 +216,27 @@ export function GameMap({
             <div className="text-xs space-y-1">
               <p className="font-semibold">{npc.name}</p>
               <p className="text-gray-500 capitalize">{npc.role}</p>
-              {npc.dialogue && <p className="italic text-gray-400">"{npc.dialogue}"</p>}
-              <Button size="sm" variant="danger" onClick={() => onDeleteNpc(npc.id)}>
-                Delete
-              </Button>
+              {npc.role === 'merchant' && (
+                <p className="text-gray-500">
+                  Catalogue:{' '}
+                  {npc.merchant_id !== null ? (
+                    <span className="text-gray-300">#{npc.merchant_id}</span>
+                  ) : (
+                    <span className="italic text-amber-400">unassigned</span>
+                  )}
+                </p>
+              )}
+              {npc.dialogue && <p className="italic text-gray-400">&quot;{npc.dialogue}&quot;</p>}
+              <div className="flex gap-1 pt-1">
+                {npc.role === 'merchant' && (
+                  <Button size="sm" variant="secondary" onClick={() => onEditMerchantNpc(npc)}>
+                    Edit shop
+                  </Button>
+                )}
+                <Button size="sm" variant="danger" onClick={() => onDeleteNpc(npc.id)}>
+                  Delete
+                </Button>
+              </div>
             </div>
           </Popup>
         </Marker>

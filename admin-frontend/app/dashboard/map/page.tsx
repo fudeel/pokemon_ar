@@ -8,6 +8,7 @@ import { MapToolbar } from '@/components/map/MapToolbar'
 import { PlacementModal } from '@/components/map/PlacementModal'
 import { EditSpawnAreaModal } from '@/components/map/EditSpawnAreaModal'
 import { EditItemSpawnAreaModal } from '@/components/map/EditItemSpawnAreaModal'
+import { EditMerchantNpcModal } from '@/components/map/EditMerchantNpcModal'
 import { POLYGON_AREA_TYPES } from '@/components/map/GameMap'
 import {
   deactivateWorldItem,
@@ -84,6 +85,7 @@ export default function MapPage() {
   const [placement, setPlacement] = useState<Placement | null>(null)
   const [editingSpawnArea, setEditingSpawnArea] = useState<SpawnArea | null>(null)
   const [editingItemSpawnArea, setEditingItemSpawnArea] = useState<ItemSpawnArea | null>(null)
+  const [editingMerchantNpc, setEditingMerchantNpc] = useState<Npc | null>(null)
 
   const loadAll = useCallback(async () => {
     const [mos, npcList, sas, eas, gymList, rares, wisps, isas, sp, itemList, merchantList] = await Promise.all([
@@ -174,6 +176,18 @@ export default function MapPage() {
     setEditingItemSpawnArea(null)
   }, [])
 
+  const handleMerchantSaved = useCallback((merchant: Merchant) => {
+    setMerchants((prev) => {
+      const exists = prev.find((m) => m.id === merchant.id)
+      return exists ? prev.map((m) => (m.id === merchant.id ? merchant : m)) : [...prev, merchant]
+    })
+  }, [])
+
+  const handleNpcUpdated = useCallback((updated: Npc) => {
+    setNpcs((prev) => prev.map((n) => (n.id === updated.id ? updated : n)))
+    setEditingMerchantNpc((current) => (current && current.id === updated.id ? updated : current))
+  }, [])
+
   const handleDeleteMapObject = useCallback(async (id: number) => {
     await deleteMapObject(id)
     setMapObjects((p) => p.filter((o) => o.id !== id))
@@ -238,6 +252,7 @@ export default function MapPage() {
           onClosePolygon={handleClosePolygon}
           onDeleteMapObject={handleDeleteMapObject}
           onDeleteNpc={handleDeleteNpc}
+          onEditMerchantNpc={setEditingMerchantNpc}
           onEditSpawnArea={setEditingSpawnArea}
           onDeleteSpawnArea={handleDeleteSpawnArea}
           onDeleteEventArea={handleDeleteEventArea}
@@ -285,6 +300,7 @@ export default function MapPage() {
           species={species}
           items={items}
           merchants={merchants}
+          onMerchantCreated={handleMerchantSaved}
           onCreated={handleEntityCreated}
           onClose={handlePlacementClose}
         />
@@ -297,6 +313,7 @@ export default function MapPage() {
           species={species}
           items={items}
           merchants={merchants}
+          onMerchantCreated={handleMerchantSaved}
           onCreated={handleEntityCreated}
           onClose={handlePlacementClose}
         />
@@ -309,6 +326,17 @@ export default function MapPage() {
           items={items}
           onSaved={handleSpawnAreaUpdated}
           onClose={() => setEditingSpawnArea(null)}
+        />
+      )}
+
+      {editingMerchantNpc && (
+        <EditMerchantNpcModal
+          npc={editingMerchantNpc}
+          merchants={merchants}
+          items={items}
+          onNpcUpdated={handleNpcUpdated}
+          onMerchantSaved={handleMerchantSaved}
+          onClose={() => setEditingMerchantNpc(null)}
         />
       )}
 

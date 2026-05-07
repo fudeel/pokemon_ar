@@ -146,19 +146,16 @@ export default function BattleCommandPanel({
           <>
             <CommandButton
               disabled={isResolving || isBattleOver || isPlayerFainted}
-              isActive={commandMode === 'fight'}
               label="Fight"
               onClick={() => onCommandModeChange('fight')}
             />
             <CommandButton
               disabled={isResolving || isBattleOver}
-              isActive={commandMode === 'bag'}
               label="Bag"
               onClick={() => onCommandModeChange('bag')}
             />
             <CommandButton
               disabled={isResolving || isBattleOver}
-              isActive={commandMode === 'party'}
               label="Pokémon"
               onClick={() => onCommandModeChange('party')}
             />
