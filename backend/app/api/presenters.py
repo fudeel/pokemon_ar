@@ -21,6 +21,7 @@ from app.api.schemas.admin import (
     QuestObjectiveModel,
     QuestRewardModel,
 )
+from app.api.schemas.wallet import WalletTransactionModel
 from app.api.schemas.world import (
     ItemSpawnAreaItemModel,
     ItemSpawnAreaModel,
@@ -53,6 +54,7 @@ from app.domain.world.item_spawn_area import ItemSpawnArea
 from app.domain.world.world_item_spawn import WorldItemSpawn
 from app.domain.quests.quest_objective import QuestObjective
 from app.domain.quests.quest_reward import QuestItemReward, QuestReward
+from app.domain.wallet.wallet_transaction import WalletTransaction
 from app.domain.pokemon.move import EquippedMove, Move
 from app.domain.pokemon.pokemon_instance import PokemonInstance
 from app.domain.pokemon.pokemon_species import PokemonSpecies
@@ -416,6 +418,18 @@ def item_spawn_area_to_model(area: ItemSpawnArea) -> ItemSpawnAreaModel:
             )
             for e in area.items
         ],
+    )
+
+
+def wallet_transaction_to_model(transaction: WalletTransaction) -> WalletTransactionModel:
+    return WalletTransactionModel(
+        id=transaction.id,
+        amount=transaction.amount,
+        transaction_type=transaction.transaction_type.value,
+        reference_id=transaction.reference_id,
+        notes=transaction.notes,
+        balance_after=transaction.balance_after,
+        created_at=transaction.created_at,
     )
 
 

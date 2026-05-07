@@ -11,11 +11,13 @@ from app.core.exceptions import (
 )
 from app.domain.characters.non_player_character import NPCRole
 from app.domain.items.merchant import Merchant
+from app.domain.wallet.transaction_type import WalletTransactionType
 from app.domain.world.geo_location import GeoLocation
 from app.repositories.inventory_repository import InventoryRepository
 from app.repositories.merchant_repository import MerchantRepository
 from app.repositories.npc_repository import NpcRepository
 from app.repositories.player_repository import PlayerRepository
+from app.services.wallet_service import WalletService
 
 _PURCHASE_PROXIMITY_METERS = 60.0
 
@@ -54,12 +56,14 @@ class MerchantService:
         npc_repository: NpcRepository,
         player_repository: PlayerRepository,
         inventory_repository: InventoryRepository,
+        wallet_service: WalletService,
         purchase_proximity_meters: float = _PURCHASE_PROXIMITY_METERS,
     ) -> None:
         self._merchants = merchant_repository
         self._npcs = npc_repository
         self._players = player_repository
         self._inventory = inventory_repository
+        self._wallet = wallet_service
         self._proximity = purchase_proximity_meters
 
     def get_npc_merchant(self, npc_id: int) -> Merchant:
@@ -129,7 +133,13 @@ class MerchantService:
                 f"need {total} pokecoins, have {player.pokecoins}"
             )
 
-        pokecoins_after = self._players.adjust_pokecoins(player_id, -total)
+        adjustment = self._wallet.debit(
+            player_id=player_id,
+            amount=total,
+            transaction_type=WalletTransactionType.MERCHANT_PURCHASE,
+            reference_id=npc_id,
+            notes=f"merchant {merchant.id}",
+        )
         for result in results:
             self._inventory.add(player_id, result.item_id, result.quantity)
 
@@ -138,5 +148,5 @@ class MerchantService:
             merchant_id=merchant.id,
             lines=results,
             total_cost=total,
-            pokecoins_after=pokecoins_after,
+            pokecoins_after=adjustment.balance_after,
         )

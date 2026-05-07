@@ -67,13 +67,27 @@ class PlayerRepository(BaseRepository):
 
     def adjust_pokecoins(self, player_id: int, delta: int) -> int:
         with self.db.transaction() as conn:
-            row = conn.execute("SELECT pokecoins FROM players WHERE id = ?", (player_id,)).fetchone()
-            if row is None:
-                raise NotFoundError(f"player {player_id} not found")
-            new_balance = row["pokecoins"] + delta
-            if new_balance < 0:
-                raise ValueError("pokecoin balance cannot go negative")
-            conn.execute("UPDATE players SET pokecoins = ? WHERE id = ?", (new_balance, player_id))
+            return self.adjust_pokecoins_in_tx(conn, player_id, delta)
+
+    def adjust_pokecoins_in_tx(
+        self, conn: sqlite3.Connection, player_id: int, delta: int
+    ) -> int:
+        """Adjust the pokecoin balance using a caller-provided transaction.
+
+        Allows higher-level services (e.g. the wallet service) to combine the
+        balance update with a ledger append in a single atomic transaction.
+        """
+        row = conn.execute(
+            "SELECT pokecoins FROM players WHERE id = ?", (player_id,)
+        ).fetchone()
+        if row is None:
+            raise NotFoundError(f"player {player_id} not found")
+        new_balance = row["pokecoins"] + delta
+        if new_balance < 0:
+            raise ValueError("pokecoin balance cannot go negative")
+        conn.execute(
+            "UPDATE players SET pokecoins = ? WHERE id = ?", (new_balance, player_id)
+        )
         return new_balance
 
     def add_experience(self, player_id: int, amount: int, new_level: int) -> None:

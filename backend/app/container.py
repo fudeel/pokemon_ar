@@ -21,6 +21,7 @@ from app.repositories.item_spawn_area_repository import ItemSpawnAreaRepository
 from app.repositories.pokemon_species_repository import PokemonSpeciesRepository
 from app.repositories.quest_repository import QuestRepository
 from app.repositories.spawn_area_repository import SpawnAreaRepository
+from app.repositories.wallet_transaction_repository import WalletTransactionRepository
 from app.repositories.wild_pokemon_repository import WildPokemonRepository
 from app.repositories.world_item_spawn_repository import WorldItemSpawnRepository
 from app.services.admin_service import AdminService
@@ -29,6 +30,7 @@ from app.services.capture_service import CaptureService
 from app.services.merchant_service import MerchantService
 from app.services.player_profile_service import PlayerProfileService
 from app.services.starter_service import StarterService
+from app.services.wallet_service import WalletService
 from app.services.world_item_collection_service import WorldItemCollectionService
 from app.services.world_service import WorldService
 
@@ -63,6 +65,7 @@ class Container:
         self.quest_repository = QuestRepository(self.database)
         self.world_item_spawn_repository = WorldItemSpawnRepository(self.database, self.item_repository)
         self.item_spawn_area_repository = ItemSpawnAreaRepository(self.database, self.item_repository)
+        self.wallet_transaction_repository = WalletTransactionRepository(self.database)
 
         self.auth_service = AuthService(
             player_repository=self.player_repository,
@@ -126,11 +129,16 @@ class Container:
             gym_repository=self.gym_repository,
             wild_pokemon_repository=self.wild_pokemon_repository,
         )
+        self.wallet_service = WalletService(
+            player_repository=self.player_repository,
+            wallet_transaction_repository=self.wallet_transaction_repository,
+        )
         self.merchant_service = MerchantService(
             merchant_repository=self.merchant_repository,
             npc_repository=self.npc_repository,
             player_repository=self.player_repository,
             inventory_repository=self.inventory_repository,
+            wallet_service=self.wallet_service,
         )
 
     def initialize(self) -> None:

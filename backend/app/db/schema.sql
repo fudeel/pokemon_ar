@@ -422,6 +422,24 @@ CREATE TABLE IF NOT EXISTS npc_quests (
     FOREIGN KEY (quest_id) REFERENCES quests(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS wallet_transactions (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    player_id INTEGER NOT NULL,
+    amount INTEGER NOT NULL,
+    transaction_type TEXT NOT NULL CHECK (transaction_type IN (
+        'quest_reward','gym_reward','pvp_reward','stripe_purchase',
+        'merchant_purchase','admin_grant','refund'
+    )),
+    reference_id INTEGER,
+    notes TEXT,
+    balance_after INTEGER NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
+);
+
+CREATE INDEX IF NOT EXISTS idx_wallet_transactions_player_created
+    ON wallet_transactions(player_id, created_at DESC, id DESC);
+
 CREATE TABLE IF NOT EXISTS gym_defenders (
     gym_id INTEGER NOT NULL,
     slot INTEGER NOT NULL CHECK (slot BETWEEN 1 AND 6),
